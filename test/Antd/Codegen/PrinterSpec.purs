@@ -4,8 +4,8 @@ module Antd.Codegen.PrinterSpec
 
 import Prelude
 
-import Antd.Codegen.Printer (printModuleSection)
-import Antd.Codegen.Types (PSDeclName(..), PSImport, PSModule)
+import Antd.Codegen.Printer (printImportSection, printModuleSection)
+import Antd.Codegen.Types (PSDeclName(..))
 import Data.String (Pattern(..), contains)
 import Test.Spec (Spec, describe, it)
 import Test.Spec.Assertions (shouldEqual, shouldSatisfy)
@@ -15,32 +15,29 @@ printerSpec =
   describe "Printer" do
     describe "module section" do
       it "should have module name" do
-        printModuleSection (mDef "Foo" [] []) `shouldSatisfy`
+        printModuleSection "Foo" [] `shouldSatisfy`
           contains (Pattern "module Foo")
 
-        printModuleSection (mDef "Foo.Bar" [] []) `shouldSatisfy`
+        printModuleSection "Foo.Bar" [] `shouldSatisfy`
           contains (Pattern "module Foo.Bar")
 
       it "omit empty exports" do
-        printModuleSection (mDef "Foo" [] []) `shouldEqual`
+        printModuleSection "Foo" [] `shouldEqual`
           ( "module Foo"
             <> "\n  where"
           )
 
-      it "declare exports " do
-        printModuleSection
-          ( mDef "Foo"
-            [ PSDeclNameFun "myFun"
-            , PSDeclNameType { name: "MyType"
-                             , includeConstructors: false
-                             }
-            , PSDeclNameType { name: "MyData"
-                             , includeConstructors: true
-                             }
-            , PSDeclNameClass "MyClass"
-            ]
-            []
-          )
+      it "declare exports" do
+        printModuleSection "Foo"
+          [ PSDeclNameFun "myFun"
+          , PSDeclNameType { name: "MyType"
+                           , includeConstructors: false
+                           }
+          , PSDeclNameType { name: "MyData"
+                           , includeConstructors: true
+                           }
+          , PSDeclNameClass "MyClass"
+          ]
           `shouldEqual`
           ( "module Foo"
             <> "\n  ( myFun"
@@ -50,5 +47,31 @@ printerSpec =
             <> "\n  ) where"
           )
 
-mDef :: String -> Array PSDeclName -> Array PSImport -> PSModule
-mDef name exports imports = { name, exports, imports }
+    describe "imports" do
+      it "should allow import Prelude" do
+        printImportSection true [] `shouldEqual`
+          "import Prelude\n"
+
+      it "should import modules" do
+        printImportSection true
+          [ { mod: "Foo", names: [ PSDeclNameFun "fooFun" ] }
+          , { mod: "Bar"
+            , names: [ PSDeclNameType { name: "BarType"
+                                      , includeConstructors: false
+                                      }
+                     , PSDeclNameType { name: "BarData"
+                                      , includeConstructors: true
+                                      }
+                     ]
+            }
+          , { mod: "Baz"
+            , names: [ PSDeclNameClass "BazClass"
+                     ]
+            }
+          ] `shouldEqual`
+          ( "import Prelude"
+            <> "\n"
+            <> "\nimport Foo(fooFun)"
+            <> "\nimport Bar(BarType, BarData(..))"
+            <> "\nimport Baz(class BazClass)"
+          )

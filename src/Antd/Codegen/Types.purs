@@ -58,6 +58,7 @@ data Typ
 type PSModule
   = { name :: String
     , exports :: Array PSDeclName
+    , importPrelude :: Boolean
     , imports :: Array PSImport
     }
 
@@ -66,4 +67,4 @@ data PSDeclName
   | PSDeclNameType { name :: String, includeConstructors :: Boolean }
   | PSDeclNameClass String
 
-type PSImport = { module :: String, name :: PSDeclName }
+type PSImport = { mod :: String, names :: Array PSDeclName }

@@ -1,14 +1,24 @@
 module Antd.Codegen.Printer
-       ( printModuleSection
+       ( printModule
+       , printModuleSection
+       , printImportSection
        ) where
 
 import Prelude
 
-import Antd.Codegen.Types (PSDeclName(..), PSModule)
+import Antd.Codegen.Types (PSDeclName(..), PSImport, PSModule)
 import Data.Array as Array
 
-printModuleSection :: PSModule -> String
-printModuleSection { name, exports } =
+-- TODO Add test
+printModule :: PSModule -> String
+printModule { name, exports, importPrelude, imports } =
+  printModuleSection name exports
+  <> "\n"
+  <> "\n" <> printImportSection importPrelude imports
+  <> "\n"
+
+printModuleSection :: String -> Array PSDeclName -> String
+printModuleSection name exports =
   "module " <> name
   <> "\n" <> importSection
 
@@ -19,6 +29,26 @@ printModuleSection { name, exports } =
         "  ( "
         <> (Array.intercalate "\n  , " $ printDeclName <$> exports)
         <> "\n  ) where"
+
+printImportSection :: Boolean -> Array PSImport -> String
+printImportSection importPrelude imports =
+  importPreludeSection <> otherImportsSection
+  where
+    importPreludeSection =
+      if importPrelude
+      then "import Prelude\n"
+      else ""
+
+    otherImportsSection = case imports of
+      [] -> ""
+      _ -> "\n" <> (Array.intercalate "\n" $ printImport <$> imports)
+
+    printImport { mod, names } =
+      "import " <> mod <> "(" <> namesSection <> ")"
+      where
+        namesSection = Array.intercalate ", " $ printDeclName <$> names
+
+-- Utils
 
 printDeclName :: PSDeclName -> String
 printDeclName (PSDeclNameFun n) = n
