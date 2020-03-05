@@ -4,52 +4,12 @@ module Antd.Codegen
 
 import Prelude
 
+import Antd.Codegen.Types (AntModule, Prop, Typ(..))
 import Data.Maybe (Maybe(..))
 import Effect (Effect)
 import Effect.Console (log)
 
-type Module
-  = { name :: String
-    , primaryProps :: Array Prop
-    , subComponents ::
-         Array { name :: String
-               , props :: Array Prop
-               }
-    }
-
-type Prop
-  = { name :: String
-    , description :: String
-    , docType :: Maybe String
-    , docDefault :: Maybe String
-    , required :: Boolean
-    , typ :: Typ
-    }
-
-data Typ
-  = TypString
-  | TypInt
-  | TypNumber
-  | TypBoolean
-  | TypRef { name :: String }
-  | TypUnknown
-  | TypStringLit String
-  | TypBooleanLit Boolean
-  | TypOneOf (Array Typ)
-  | TypArray Typ
-  | TypFn { effectful :: Boolean
-          , input :: Array Typ
-          , output :: Typ
-          }
-  | TypRecord (Array ( { key :: String
-                       , required :: Boolean
-                       , typ :: Typ
-                       }
-                     ) )
-  | TypNode
-  | TypUnit
-
-tableModule :: Module
+tableModule :: AntModule
 tableModule =
   { name: "Table"
   , primaryProps:

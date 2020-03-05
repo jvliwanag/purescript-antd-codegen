@@ -1,19 +1,12 @@
-{-
-Welcome to a Spago project!
-You can edit this file as you like.
--}
-{ name = "antd"
-
+{ name = "antd-codegen"
 , dependencies =
   [ "console"
   , "effect"
-  , "literal"
-  , "oneof"
+  , "maybe"
   , "psci-support"
-  , "react-basic"
+  , "spec"
+  , "strings"
   ]
-  
 , packages = ./packages.dhall
-
 , sources = [ "src/**/*.purs", "test/**/*.purs" ]
 }
