@@ -2,13 +2,18 @@ module Antd.Codegen.Printer
        ( printModule
        , printModuleSection
        , printImportSection
+       , printDecl
        ) where
 
 import Prelude
 
-import Antd.Codegen.Types (PSDeclName(..), PSImport, PSModule)
+import Antd.Codegen.Types (PSDecl(..), PSDeclName(..), PSImport, PSModule)
+import Data.Array (mapWithIndex)
 import Data.Array as Array
 import Data.Either (fromRight)
+import Data.Maybe (Maybe(..), isJust)
+import Data.String (Pattern(..))
+import Data.String as String
 import Data.String.Regex (regex)
 import Data.String.Regex as Regex
 import Data.String.Regex.Flags (noFlags)
@@ -51,6 +56,41 @@ printImportSection importPrelude imports =
       "import " <> mod <> "(" <> namesSection <> ")"
       where
         namesSection = Array.intercalate ", " $ printDeclName <$> names
+
+printDecl :: PSDecl -> String
+printDecl (PSDeclTypeRecord { name, rows }) =
+  "type " <> name
+  <> "\n  = {" <> rowsSection
+  <> "\n    }"
+  where
+    rowsSection =
+      Array.intercalate "\n" $ printRow `mapWithIndex` rows
+
+    printRow ndx { name: rowName, allowUndefined, typ, documentation } =
+      docSection
+      <> delim <> rowName <> " :: " <> printTyp allowUndefined typ
+      where
+        docSection = case documentation of
+          Just d -> printDocumentation ndx d <> "\n"
+          Nothing -> ""
+
+        delim = case ndx, isJust documentation of
+          0, false -> " "
+          0, true -> "      "
+          _, _    -> "    , "
+
+    printTyp true typ = "UndefinedOr " <> typ -- check if typ has ns
+    printTyp false typ = typ
+
+    printDocumentation ndx doc =
+      Array.intercalate "\n"
+      $ (\docLnNdx t ->
+          case ndx, docLnNdx of
+            0, 0 -> " -- " <> t
+            _, _ -> "      -- " <> t
+        )
+      `mapWithIndex` String.split (Pattern "\n") doc
+
 
 -- Utils
 

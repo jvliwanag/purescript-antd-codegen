@@ -6,6 +6,8 @@ module Antd.Codegen.Types
        , PSModule
        , PSDeclName(..)
        , PSImport
+       , PSRecordRow
+       , PSDecl(..)
        ) where
 
 import Data.Maybe (Maybe)
@@ -52,7 +54,6 @@ data Typ
   | TypNode
   | TypUnit
 
-
 --
 
 type PSModule
@@ -68,3 +69,16 @@ data PSDeclName
   | PSDeclNameClass String
 
 type PSImport = { mod :: String, names :: Array PSDeclName }
+
+type PSRecordRow =
+  { name :: String
+  , allowUndefined :: Boolean
+  , typ :: String
+  , documentation :: Maybe String
+  }
+
+data PSDecl
+  = PSDeclTypeRecord
+    { name :: String
+    , rows :: Array PSRecordRow
+    }

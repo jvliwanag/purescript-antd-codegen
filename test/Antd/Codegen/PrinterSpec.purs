@@ -4,8 +4,9 @@ module Antd.Codegen.PrinterSpec
 
 import Prelude
 
-import Antd.Codegen.Printer (printImportSection, printModule, printModuleSection)
-import Antd.Codegen.Types (PSDeclName(..))
+import Antd.Codegen.Printer (printDecl, printImportSection, printModule, printModuleSection)
+import Antd.Codegen.Types (PSDecl(..), PSDeclName(..), PSRecordRow)
+import Data.Maybe (Maybe(..))
 import Data.String (Pattern(..), contains)
 import Test.Spec (Spec, describe, it)
 import Test.Spec.Assertions (shouldEqual, shouldSatisfy)
@@ -80,6 +81,63 @@ printerSpec =
             <> "\nimport Baz(class BazClass)"
           )
 
+    describe "declarations" do
+      it "should print empty record" do
+        printDecl (
+          PSDeclTypeRecord
+          { name: "Foo"
+          , rows: []
+          }
+          ) `shouldEqual`
+          ( "type Foo"
+            <> "\n  = {"
+            <> "\n    }"
+          )
+
+      it "should print record type rows with docs" do
+        printDecl (
+          PSDeclTypeRecord
+          { name: "Foo"
+          , rows:
+            [ recordRow "prop1" false "Int" Nothing
+            , recordRow "prop2" false "Int" (Just "line1\nline2\nline3")
+            , recordRow "prop3" false "Int" Nothing
+            , recordRow "prop4" false "Int" Nothing
+            , recordRow "prop5" false "Int" (Just "line1")
+            , recordRow "prop6" false "Int" (Just "line1")
+            ]
+          }
+          ) `shouldEqual`
+          (      "type Foo"
+            <> "\n  = { prop1 :: Int"
+            <> "\n      -- line1"
+            <> "\n      -- line2"
+            <> "\n      -- line3"
+            <> "\n    , prop2 :: Int"
+            <> "\n    , prop3 :: Int"
+            <> "\n    , prop4 :: Int"
+            <> "\n      -- line1"
+            <> "\n    , prop5 :: Int"
+            <> "\n      -- line1"
+            <> "\n    , prop6 :: Int"
+            <> "\n    }"
+          )
+      it "should print record type starting with a row with doc" do
+        printDecl (
+          PSDeclTypeRecord
+          { name: "Foo"
+          , rows:
+            [ recordRow "prop1" false "Int" (Just "line")
+            ]
+          }
+          ) `shouldEqual`
+          (      "type Foo"
+            <> "\n  = { -- line"
+            <> "\n      prop1 :: Int"
+            <> "\n    }"
+          )
+
+
     describe "printer" do
       it "should print module" do
         printModule
@@ -103,3 +161,7 @@ printerSpec =
             <> "\nimport Foo(fooFun)"
             <> "\n"
           )
+
+recordRow :: String -> Boolean -> String -> Maybe String -> PSRecordRow
+recordRow name allowUndefined typ documentation =
+  { name, allowUndefined, typ, documentation }
