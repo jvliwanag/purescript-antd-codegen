@@ -4,7 +4,7 @@ module Antd.Codegen.PrinterSpec
 
 import Prelude
 
-import Antd.Codegen.Printer (printImportSection, printModuleSection)
+import Antd.Codegen.Printer (printImportSection, printModule, printModuleSection)
 import Antd.Codegen.Types (PSDeclName(..))
 import Data.String (Pattern(..), contains)
 import Test.Spec (Spec, describe, it)
@@ -74,4 +74,28 @@ printerSpec =
             <> "\nimport Foo(fooFun)"
             <> "\nimport Bar(BarType, BarData(..))"
             <> "\nimport Baz(class BazClass)"
+          )
+
+    describe "printer" do
+      it "should print module" do
+        printModule
+          { name: "Foo.Bar"
+          , exports:
+            [ PSDeclNameFun "myFun"
+            ]
+          , importPrelude: true
+          , imports:
+            [ { mod: "Foo"
+              , names: [ PSDeclNameFun "fooFun" ]
+              }
+            ]
+          } `shouldEqual`
+          ( "module Foo.Bar"
+            <> "\n  ( myFun"
+            <> "\n  ) where"
+            <> "\n"
+            <> "\nimport Prelude"
+            <> "\n"
+            <> "\nimport Foo(fooFun)"
+            <> "\n"
           )

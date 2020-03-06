@@ -9,7 +9,6 @@ import Prelude
 import Antd.Codegen.Types (PSDeclName(..), PSImport, PSModule)
 import Data.Array as Array
 
--- TODO Add test
 printModule :: PSModule -> String
 printModule { name, exports, importPrelude, imports } =
   printModuleSection name exports
