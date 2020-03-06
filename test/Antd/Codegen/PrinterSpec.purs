@@ -36,6 +36,9 @@ printerSpec =
           , PSDeclNameType { name: "MyData"
                            , includeConstructors: true
                            }
+          , PSDeclNameType { name: "|+|"
+                           , includeConstructors: false
+                           }
           , PSDeclNameClass "MyClass"
           ]
           `shouldEqual`
@@ -43,6 +46,7 @@ printerSpec =
             <> "\n  ( myFun"
             <> "\n  , MyType"
             <> "\n  , MyData(..)"
+            <> "\n  , type (|+|)"
             <> "\n  , class MyClass"
             <> "\n  ) where"
           )

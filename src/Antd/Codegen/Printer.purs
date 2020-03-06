@@ -8,6 +8,11 @@ import Prelude
 
 import Antd.Codegen.Types (PSDeclName(..), PSImport, PSModule)
 import Data.Array as Array
+import Data.Either (fromRight)
+import Data.String.Regex (regex)
+import Data.String.Regex as Regex
+import Data.String.Regex.Flags (noFlags)
+import Partial.Unsafe (unsafePartial)
 
 printModule :: PSModule -> String
 printModule { name, exports, importPrelude, imports } =
@@ -52,8 +57,19 @@ printImportSection importPrelude imports =
 printDeclName :: PSDeclName -> String
 printDeclName (PSDeclNameFun n) = n
 printDeclName (PSDeclNameType { name, includeConstructors }) =
-  if includeConstructors
-  then name <> "(..)"
-  else name
+  nameQ <> suffix
+  where
+    nameQ = if nameNeedsQuote name
+            then "type (" <> name <> ")"
+            else name
+
+    suffix = if includeConstructors
+             then "(..)"
+             else ""
 printDeclName (PSDeclNameClass n) =
   "class " <> n
+
+nameNeedsQuote :: String -> Boolean
+nameNeedsQuote = Regex.test symbolRE
+  where
+    symbolRE = unsafePartial $ fromRight $ regex "[^A-Za-z0-9]" noFlags
