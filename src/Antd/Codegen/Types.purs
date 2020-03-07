@@ -1,6 +1,7 @@
 module Antd.Codegen.Types
        ( AntModule
        , Prop(..)
+       , PropTyp
        , Typ(..)
          -- purescript syntax
        , PSModule
@@ -31,9 +32,13 @@ type Prop
     , description :: String
     , docType :: Maybe String
     , docDefault :: Maybe String
-    , required :: Boolean
-    , typ :: Typ
+    , propTyp :: PropTyp
     }
+
+type PropTyp =
+  { typ :: Typ
+  , required :: Boolean
+  }
 
 data Typ
   = TypString
