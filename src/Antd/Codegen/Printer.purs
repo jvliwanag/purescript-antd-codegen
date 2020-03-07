@@ -67,9 +67,9 @@ printDecl (PSDeclTypeRecord { name, rows }) =
     rowsSection =
       Array.intercalate "\n" $ printRow `mapWithIndex` rows
 
-    printRow ndx { name: rowName, allowUndefined, typ, documentation } =
+    printRow ndx { name: rowName, propTyp, documentation } =
       docSection
-      <> delim <> rowName <> " :: " <> printTyp' allowUndefined typ
+      <> delim <> rowName <> " :: " <> printPropTyp propTyp
       where
         docSection = case documentation of
           Just d -> printDocumentation ndx d <> "\n"
@@ -79,9 +79,6 @@ printDecl (PSDeclTypeRecord { name, rows }) =
           0, false -> " "
           0, true -> "      "
           _, _    -> "    , "
-
-    printTyp' true typ = "UndefinedOr " <> typ -- check if typ has ns
-    printTyp' false typ = typ
 
     printDocumentation ndx doc =
       Array.intercalate "\n"

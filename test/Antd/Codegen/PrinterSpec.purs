@@ -194,12 +194,12 @@ printerSpec =
           PSDeclTypeRecord
           { name: "Foo"
           , rows:
-            [ recordRow "prop1" false "Int" Nothing
-            , recordRow "prop2" false "Int" (Just "line1\nline2\nline3")
-            , recordRow "prop3" false "Int" Nothing
-            , recordRow "prop4" false "Int" Nothing
-            , recordRow "prop5" false "Int" (Just "line1")
-            , recordRow "prop6" false "Int" (Just "line1")
+            [ recordRow "prop1" true TypInt Nothing
+            , recordRow "prop2" true TypInt (Just "line1\nline2\nline3")
+            , recordRow "prop3" true TypInt Nothing
+            , recordRow "prop4" true TypInt Nothing
+            , recordRow "prop5" true TypInt (Just "line1")
+            , recordRow "prop6" false TypInt (Just "line1")
             ]
           }
           ) `shouldEqual`
@@ -214,7 +214,7 @@ printerSpec =
             <> "\n      -- line1"
             <> "\n    , prop5 :: Int"
             <> "\n      -- line1"
-            <> "\n    , prop6 :: Int"
+            <> "\n    , prop6 :: UndefinedOr Int"
             <> "\n    }"
           )
       it "should print record type starting with a row with doc" do
@@ -222,7 +222,7 @@ printerSpec =
           PSDeclTypeRecord
           { name: "Foo"
           , rows:
-            [ recordRow "prop1" false "Int" (Just "line")
+            [ recordRow "prop1" true TypInt (Just "line")
             ]
           }
           ) `shouldEqual`
@@ -257,9 +257,9 @@ printerSpec =
             <> "\n"
           )
 
-recordRow :: String -> Boolean -> String -> Maybe String -> PSRecordRow
-recordRow name allowUndefined typ documentation =
-  { name, allowUndefined, typ, documentation }
+recordRow :: String -> Boolean -> Typ -> Maybe String -> PSRecordRow
+recordRow name required typ documentation =
+  { name, propTyp: { required,  typ } , documentation }
 
 itShouldPrintTyp :: Typ -> String -> Spec Unit
 itShouldPrintTyp typ expected = do

@@ -97,8 +97,7 @@ type PSImport = { mod :: String, names :: Array PSDeclName }
 
 type PSRecordRow =
   { name :: String
-  , allowUndefined :: Boolean
-  , typ :: String
+  , propTyp :: PropTyp
   , documentation :: Maybe String
   }
 
