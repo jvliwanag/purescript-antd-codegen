@@ -4,8 +4,8 @@ module Antd.Codegen.PrinterSpec
 
 import Prelude
 
-import Antd.Codegen.Printer (printDecl, printImportSection, printModule, printModuleSection)
-import Antd.Codegen.Types (PSDecl(..), PSDeclName(..), PSRecordRow)
+import Antd.Codegen.Printer (printDecl, printImportSection, printModule, printModuleSection, printTyp)
+import Antd.Codegen.Types (PSDecl(..), PSDeclName(..), PSRecordRow, Typ(..))
 import Data.Maybe (Maybe(..))
 import Data.String (Pattern(..), contains)
 import Test.Spec (Spec, describe, it)
@@ -80,6 +80,77 @@ printerSpec =
             <> "\nimport Bar(BarType, BarData(..))"
             <> "\nimport Baz(class BazClass)"
           )
+
+    describe "types" do
+      itShouldPrintTyp TypInt "Int"
+      itShouldPrintTyp TypString "String"
+      itShouldPrintTyp TypInt "Int"
+      itShouldPrintTyp TypNumber "Number"
+      itShouldPrintTyp TypBoolean "Boolean"
+      itShouldPrintTyp (TypRef { name: "Foo" }) "Foo"
+      itShouldPrintTyp TypUnknown "Foreign"
+      itShouldPrintTyp (TypStringLit "Foo") "StringLit \"Foo\""
+      itShouldPrintTyp (TypBooleanLit true) "BooleanLit \"true\""
+      itShouldPrintTyp (TypBooleanLit false) "BooleanLit \"false\""
+      itShouldPrintTyp TypNode "JSX"
+      itShouldPrintTyp TypUnit "Unit"
+
+      -- oneof
+      itShouldPrintTyp (TypOneOf [TypInt, TypString, TypNode]) $
+        "Int |+| String |+| JSX"
+
+      -- array
+      itShouldPrintTyp (TypArray TypInt) $
+        "Array Int"
+      itShouldPrintTyp (TypArray (TypOneOf [TypInt, TypString])) $
+        "Array (Int |+| String)"
+
+      -- todo allow input as undefinedor
+      -- fn
+      itShouldPrintTyp (TypFn { effectful: false
+                              , input: []
+                              , output: TypInt
+                              }) $
+        "Unit -> Int"
+
+      itShouldPrintTyp (TypFn { effectful: false
+                              , input: [TypString]
+                              , output: TypInt
+                              }) $
+        "String -> Int"
+
+      itShouldPrintTyp (TypFn { effectful: false
+                              , input: [TypString, TypBoolean]
+                              , output: TypArray TypInt
+                              }) $
+        "Fn2 String Boolean (Array Int)"
+
+      itShouldPrintTyp (TypFn { effectful: true
+                              , input: []
+                              , output: TypInt
+                              }) $
+        "Effect Int"
+
+      itShouldPrintTyp (TypFn { effectful: true
+                              , input: [TypString]
+                              , output: TypInt
+                              }) $
+        "EffectFn1 String Int"
+
+      itShouldPrintTyp (TypFn { effectful: true
+                              , input: [TypString, TypBoolean]
+                              , output: TypArray TypInt
+                              }) $
+        "EffectFn2 String Boolean (Array Int)"
+
+
+
+--      | TypRecord (Array ( { key :: String
+--                           , required :: Boolean
+--                           , typ :: Typ
+--                           }
+--                     ) )
+
 
     describe "declarations" do
       it "should print empty record" do
@@ -165,3 +236,8 @@ printerSpec =
 recordRow :: String -> Boolean -> String -> Maybe String -> PSRecordRow
 recordRow name allowUndefined typ documentation =
   { name, allowUndefined, typ, documentation }
+
+itShouldPrintTyp :: Typ -> String -> Spec Unit
+itShouldPrintTyp typ expected = do
+  it ("should print typ " <> show typ) do
+    printTyp typ `shouldEqual` expected

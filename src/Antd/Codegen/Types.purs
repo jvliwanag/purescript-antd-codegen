@@ -10,6 +10,10 @@ module Antd.Codegen.Types
        , PSDecl(..)
        ) where
 
+import Prelude
+
+import Data.Generic.Rep (class Generic)
+import Data.Generic.Rep.Show (genericShow)
 import Data.Maybe (Maybe)
 
 
@@ -40,6 +44,9 @@ data Typ
   | TypUnknown
   | TypStringLit String
   | TypBooleanLit Boolean
+  | TypNode
+  | TypUnit
+
   | TypOneOf (Array Typ)
   | TypArray Typ
   | TypFn { effectful :: Boolean
@@ -51,8 +58,11 @@ data Typ
                        , typ :: Typ
                        }
                      ) )
-  | TypNode
-  | TypUnit
+
+derive instance typGeneric :: Generic Typ _
+
+instance typShow :: Show Typ where
+  show t = genericShow t
 
 --
 

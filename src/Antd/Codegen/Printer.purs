@@ -3,12 +3,13 @@ module Antd.Codegen.Printer
        , printModuleSection
        , printImportSection
        , printDecl
+       , printTyp
        ) where
 
 import Prelude
 
-import Antd.Codegen.Types (PSDecl(..), PSDeclName(..), PSImport, PSModule)
-import Data.Array (mapWithIndex)
+import Antd.Codegen.Types (PSDecl(..), PSDeclName(..), PSImport, PSModule, Typ(..))
+import Data.Array (fold, length, mapWithIndex)
 import Data.Array as Array
 import Data.Either (fromRight)
 import Data.Maybe (Maybe(..), isJust)
@@ -68,7 +69,7 @@ printDecl (PSDeclTypeRecord { name, rows }) =
 
     printRow ndx { name: rowName, allowUndefined, typ, documentation } =
       docSection
-      <> delim <> rowName <> " :: " <> printTyp allowUndefined typ
+      <> delim <> rowName <> " :: " <> printTyp' allowUndefined typ
       where
         docSection = case documentation of
           Just d -> printDocumentation ndx d <> "\n"
@@ -79,8 +80,8 @@ printDecl (PSDeclTypeRecord { name, rows }) =
           0, true -> "      "
           _, _    -> "    , "
 
-    printTyp true typ = "UndefinedOr " <> typ -- check if typ has ns
-    printTyp false typ = typ
+    printTyp' true typ = "UndefinedOr " <> typ -- check if typ has ns
+    printTyp' false typ = typ
 
     printDocumentation ndx doc =
       Array.intercalate "\n"
@@ -91,6 +92,37 @@ printDecl (PSDeclTypeRecord { name, rows }) =
         )
       `mapWithIndex` String.split (Pattern "\n") doc
 
+
+printTyp :: Typ -> String
+printTyp TypInt = "Int"
+printTyp TypString = "String"
+printTyp TypNumber = "Number"
+printTyp TypBoolean = "Boolean"
+printTyp (TypRef { name }) = name
+printTyp TypUnknown = "Foreign"
+printTyp (TypStringLit str) = "StringLit \"" <> str <> "\""
+printTyp (TypBooleanLit bool) = "BooleanLit \"" <> show bool <> "\""
+printTyp TypNode = "JSX"
+printTyp TypUnit = "Unit"
+printTyp (TypOneOf ts) =
+  Array.intercalate " |+| " $ printTyp <$> ts
+printTyp (TypArray t) =
+  printTypCons "Array" [t]
+printTyp (TypFn { effectful, input, output }) =
+  case effectful, input of
+    false, [] -> "Unit -> " <> printTyp output
+    false, [i0] -> printTyp i0 <> " -> " <> printTyp output
+    false, is -> printUncurriedFn "Fn"
+    true, [] -> printTypCons "Effect" [output]
+    true, is -> printUncurriedFn "EffectFn"
+
+  where
+    printUncurriedFn consPrefix =
+      printTypCons
+        (consPrefix <> (show (length input)))
+        (Array.snoc input output)
+
+printTyp _ = "TODO"
 
 -- Utils
 
@@ -113,3 +145,18 @@ nameNeedsQuote :: String -> Boolean
 nameNeedsQuote = Regex.test symbolRE
   where
     symbolRE = unsafePartial $ fromRight $ regex "[^A-Za-z0-9]" noFlags
+
+printTypCons :: String -> Array Typ -> String
+printTypCons cons args =
+  cons <> argsSection
+  where
+    argsSection = fold $ (" " <> _) <<< printTypArg <$> args
+
+printTypArg :: Typ -> String
+printTypArg typ =
+  if String.contains (Pattern " ") arg
+  then "(" <> arg <> ")"
+  else arg
+
+  where
+    arg = printTyp typ
