@@ -158,12 +158,22 @@ printerSpec =
                               }) $
         "Fn2 (UndefinedOr String) Boolean (UndefinedOr (Array Int))"
 
+      -- record
+      itShouldPrintTyp (TypRecord []) "{}"
 
---      | TypRecord (Array ( { key :: String
---                           , required :: Boolean
---                           , typ :: Typ
---                           }
---                     ) )
+      itShouldPrintTyp
+        ( TypRecord
+          [ { key: "foo", propTyp: optionalPropTyp TypString }
+          , { key: "bar", propTyp: requiredPropTyp TypBoolean }
+          , { key: "baz"
+            , propTyp: optionalPropTyp (TypOneOf [ TypString
+                                                 , TypBoolean
+                                                 ]
+                                       )
+            }
+          ]
+        ) $
+        "{ foo :: UndefinedOr String, bar :: Boolean, baz :: UndefinedOr (String |+| Boolean) }"
 
 
     describe "declarations" do

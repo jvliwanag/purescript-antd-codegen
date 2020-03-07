@@ -127,7 +127,16 @@ printTyp (TypFn { effectful, input, output }) =
         (consPrefix <> (show (length input)))
         (Array.snoc input output)
 
-printTyp _ = "TODO"
+printTyp (TypRecord []) = "{}"
+printTyp (TypRecord es) =
+  "{ " <> entriesSection <> " }"
+  where
+    entriesSection =
+      Array.intercalate ", "
+      $ printEntrySection <$> es
+
+    printEntrySection { key, propTyp } =
+      key <> " :: " <> printPropTyp propTyp
 
 -- Utils
 
