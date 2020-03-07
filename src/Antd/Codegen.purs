@@ -105,16 +105,22 @@ tableModule =
         { required: false
         , typ: TypRecord
           [ { key: "filterConfirm"
-            , required: false
-            , typ: TypString
+            , propTyp:
+              { required: false
+              , typ: TypString
+              }
             }
           , { key: "filterReset"
-            , required: false
-            , typ: TypString
+            , propTyp:
+              { required: false
+              , typ: TypString
+              }
             }
           , { key: "emptyText"
-            , required: false
-            , typ: TypString
+            , propTyp:
+              { required: false
+              , typ: TypString
+              }
             }
           ]
         }
@@ -547,16 +553,22 @@ columnPropsDef =
                     , TypFn { effectful: false
                             , input: [ requiredPropTyp $
                                        TypRecord [ { key: "sortOrder"
-                                                   , required: false
-                                                   , typ: TypInt
+                                                   , propTyp:
+                                                     { required: false
+                                                     , typ: TypInt
+                                                     }
                                                    }
                                                  , { key: "sortColumn"
-                                                   , required: false
-                                                   , typ: TypUnknown
+                                                   , propTyp:
+                                                     { required: false
+                                                     , typ: TypUnknown
+                                                     }
                                                    }
                                                  , { key: "filters"
-                                                   , required: false
-                                                   , typ: TypUnknown
+                                                   , propTyp:
+                                                     { required: false
+                                                     , typ: TypUnknown
+                                                     }
                                                    }
                                                  ]
                                      ]

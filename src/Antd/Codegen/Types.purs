@@ -70,8 +70,7 @@ data Typ
           , output :: PropTyp
           }
   | TypRecord (Array ( { key :: String
-                       , required :: Boolean
-                       , typ :: Typ
+                       , propTyp :: PropTyp
                        }
                      ) )
 
