@@ -8,7 +8,7 @@ module Antd.Codegen.Printer
 
 import Prelude
 
-import Antd.Codegen.Types (PSDecl(..), PSDeclName(..), PSImport, PSModule, Typ(..))
+import Antd.Codegen.Types (PSDecl(..), PSDeclName(..), PSImport, PSModule, Typ(..), PropTyp)
 import Data.Array (fold, length, mapWithIndex)
 import Data.Array as Array
 import Data.Either (fromRight)
@@ -92,6 +92,11 @@ printDecl (PSDeclTypeRecord { name, rows }) =
         )
       `mapWithIndex` String.split (Pattern "\n") doc
 
+printPropTyp :: PropTyp -> String
+printPropTyp { typ, required } =
+  if required
+  then printTyp typ
+  else printTypCons "UndefinedOr" [typ]
 
 printTyp :: Typ -> String
 printTyp TypInt = "Int"
@@ -110,15 +115,15 @@ printTyp (TypArray t) =
   printTypCons "Array" [t]
 printTyp (TypFn { effectful, input, output }) =
   case effectful, input of
-    false, [] -> "Unit -> " <> printTyp output
-    false, [i0] -> printTyp i0 <> " -> " <> printTyp output
+    false, [] -> "Unit -> " <> printPropTyp output
+    false, [i0] -> printPropTyp i0 <> " -> " <> printPropTyp output
     false, is -> printUncurriedFn "Fn"
-    true, [] -> printTypCons "Effect" [output]
+    true, [] -> printPropTypCons "Effect" [output]
     true, is -> printUncurriedFn "EffectFn"
 
   where
     printUncurriedFn consPrefix =
-      printTypCons
+      printPropTypCons
         (consPrefix <> (show (length input)))
         (Array.snoc input output)
 
@@ -146,17 +151,24 @@ nameNeedsQuote = Regex.test symbolRE
   where
     symbolRE = unsafePartial $ fromRight $ regex "[^A-Za-z0-9]" noFlags
 
+printPropTypCons :: String -> Array PropTyp -> String
+printPropTypCons cons args =
+  printCons cons $ printPropTyp <$> args
+
 printTypCons :: String -> Array Typ -> String
 printTypCons cons args =
+  printCons cons $ printTyp <$> args
+
+-- typ
+
+printCons :: String -> Array String -> String
+printCons cons args =
   cons <> argsSection
   where
-    argsSection = fold $ (" " <> _) <<< printTypArg <$> args
+    argsSection = fold $ (\a -> " " <> printArg a) <$> args
 
-printTypArg :: Typ -> String
-printTypArg typ =
+printArg :: String -> String
+printArg arg =
   if String.contains (Pattern " ") arg
   then "(" <> arg <> ")"
   else arg
-
-  where
-    arg = printTyp typ

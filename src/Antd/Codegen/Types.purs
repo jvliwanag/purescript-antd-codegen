@@ -2,6 +2,8 @@ module Antd.Codegen.Types
        ( AntModule
        , Prop(..)
        , PropTyp
+       , requiredPropTyp
+       , optionalPropTyp
        , Typ(..)
          -- purescript syntax
        , PSModule
@@ -40,6 +42,15 @@ type PropTyp =
   , required :: Boolean
   }
 
+requiredPropTyp :: Typ -> PropTyp
+requiredPropTyp typ =
+  { typ, required: true }
+
+optionalPropTyp :: Typ -> PropTyp
+optionalPropTyp typ =
+  { typ, required: false }
+
+
 data Typ
   = TypString
   | TypInt
@@ -55,8 +66,8 @@ data Typ
   | TypOneOf (Array Typ)
   | TypArray Typ
   | TypFn { effectful :: Boolean
-          , input :: Array Typ
-          , output :: Typ
+          , input :: Array PropTyp
+          , output :: PropTyp
           }
   | TypRecord (Array ( { key :: String
                        , required :: Boolean

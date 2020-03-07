@@ -4,7 +4,7 @@ module Antd.Codegen
 
 import Prelude
 
-import Antd.Codegen.Types (AntModule, Prop, Typ(..))
+import Antd.Codegen.Types (AntModule, Prop, Typ(..), requiredPropTyp)
 import Data.Maybe (Maybe(..))
 import Effect (Effect)
 import Effect.Console (log)
@@ -79,7 +79,11 @@ tableModule =
       , docDefault: Just "-"
       , propTyp:
         { required: false
-        , typ: TypFn { effectful: false, input: [TypUnknown], output: TypNode }
+        , typ: TypFn { effectful: false
+                     , input: [ requiredPropTyp TypUnknown
+                              ]
+                     , output: requiredPropTyp TypNode
+                     }
         }
       }
 
@@ -196,8 +200,8 @@ tableModule =
       , propTyp:
         { required: false
         , typ: TypFn { effectful: false
-                     , input: [ TypUnknown ]
-                     , output: TypNode
+                     , input: [ requiredPropTyp TypUnknown ]
+                     , output: requiredPropTyp TypNode
                      }
         }
       }
@@ -208,7 +212,11 @@ tableModule =
       , docDefault: Just "-"
       , propTyp:
         { required: false
-        , typ: TypFn { effectful: false, input: [TypUnknown], output: TypNode }
+        , typ: TypFn { effectful: false
+                     , input: [ requiredPropTyp TypUnknown
+                              ]
+                     , output: requiredPropTyp TypNode
+                     }
         }
       }
 
@@ -219,12 +227,12 @@ tableModule =
       , propTyp:
         { required: false
         , typ: TypFn { effectful: true
-                     , input: [ TypUnknown
-                              , TypUnknown
-                              , TypUnknown
-                              , TypUnknown
+                     , input: [ requiredPropTyp TypUnknown
+                              , requiredPropTyp TypUnknown
+                              , requiredPropTyp TypUnknown
+                              , requiredPropTyp TypUnknown
                               ]
-                     , output: TypUnit
+                     , output: requiredPropTyp TypUnit
                      }
         }
       }
@@ -236,8 +244,11 @@ tableModule =
       , propTyp:
         { required: false
         , typ: TypFn { effectful: true
-                     , input: [TypUnknown, TypInt, TypUnit]
-                     , output: TypUnit
+                     , input: [ requiredPropTyp TypUnknown
+                              , requiredPropTyp TypInt
+                              , requiredPropTyp TypUnit
+                              ]
+                     , output: requiredPropTyp TypUnit
                      }
         }
       }
@@ -249,8 +260,10 @@ tableModule =
       , propTyp:
         { required: false
         , typ: TypFn { effectful: true
-                     , input: [ TypUnknown, TypInt ]
-                     , output: TypUnit
+                     , input: [ requiredPropTyp TypUnknown
+                              , requiredPropTyp TypInt
+                              ]
+                     , output: requiredPropTyp TypUnit
                      }
         }
       }
@@ -262,8 +275,9 @@ tableModule =
       , propTyp:
         { required: false
         , typ: TypFn { effectful: false
-                     , input: [ TypUnknown ]
-                     , output: TypUnknown
+                     , input: [ requiredPropTyp TypUnknown
+                              ]
+                     , output: requiredPropTyp TypUnknown
                      }
         }
       }
@@ -367,8 +381,9 @@ columnPropsDef =
       { required: false
       , typ: TypOneOf [ TypNode
                     , TypFn { effectful: false
-                            , input: [ TypUnknown ]
-                            , output: TypNode
+                            , input: [ requiredPropTyp TypUnknown
+                                     ]
+                            , output: requiredPropTyp TypNode
                             }
                     ]
 
@@ -412,11 +427,12 @@ columnPropsDef =
     , propTyp:
       { required: false
       , typ: TypOneOf [ TypNode
-                    , TypFn { effectful: false
-                            , input: [ TypBoolean ]
-                            , output: TypNode
-                            }
-                    ]
+                      , TypFn { effectful: false
+                              , input: [ requiredPropTyp TypBoolean
+                                       ]
+                              , output: requiredPropTyp TypNode
+                              }
+                      ]
       }
     }
 
@@ -469,8 +485,12 @@ columnPropsDef =
     , propTyp:
       { required: false
       , typ: TypFn { effectful: false
-                 , input: [ TypString, TypUnknown, TypInt, TypNode ]
-                 , output: TypUnit
+                 , input: [ requiredPropTyp TypString
+                          , requiredPropTyp TypUnknown
+                          , requiredPropTyp TypInt
+                          , requiredPropTyp TypNode
+                          ]
+                 , output: requiredPropTyp TypUnit
                  }
       }
     }
@@ -484,7 +504,7 @@ columnPropsDef =
       , typ: TypOneOf [ TypBoolean
                     , TypFn { effectful: false
                             , input: []
-                            , output: TypUnknown
+                            , output: requiredPropTyp TypUnknown
                             }
                     ]
 
@@ -525,7 +545,8 @@ columnPropsDef =
       { required: false
       , typ: TypOneOf [ TypNode
                     , TypFn { effectful: false
-                            , input: [ TypRecord [ { key: "sortOrder"
+                            , input: [ requiredPropTyp $
+                                       TypRecord [ { key: "sortOrder"
                                                    , required: false
                                                    , typ: TypInt
                                                    }
@@ -539,7 +560,7 @@ columnPropsDef =
                                                    }
                                                  ]
                                      ]
-                            , output: TypNode
+                            , output: requiredPropTyp TypNode
                             }
                     ]
       }
@@ -562,8 +583,10 @@ columnPropsDef =
     , propTyp:
       { required: false
       , typ: TypFn { effectful: true
-                   , input: [ TypUnknown, TypInt ]
-                   , output: TypUnit
+                   , input: [ requiredPropTyp TypUnknown
+                            , requiredPropTyp TypInt
+                            ]
+                   , output: requiredPropTyp TypUnit
                    }
       }
     }
@@ -575,9 +598,9 @@ columnPropsDef =
     , propTyp:
       { required: false
       , typ: TypFn { effectful: true
-                 , input: []
-                 , output: TypUnit
-                 }
+                   , input: []
+                   , output: requiredPropTyp TypUnit
+                   }
       }
     }
 
@@ -588,8 +611,9 @@ columnPropsDef =
     , propTyp:
       { required: false
       , typ: TypFn { effectful: true
-                 , input: [ TypBoolean ]
-                 , output: TypUnit
+                 , input: [ requiredPropTyp TypBoolean
+                          ]
+                 , output: requiredPropTyp TypUnit
                  }
       }
     }
@@ -601,8 +625,9 @@ columnPropsDef =
     , propTyp:
       { required: false
       , typ: TypFn { effectful: true
-                 , input: [ TypUnknown ]
-                 , output: TypUnit
+                 , input: [ requiredPropTyp TypUnknown
+                          ]
+                 , output: requiredPropTyp TypUnit
                  }
       }
     }

@@ -5,7 +5,7 @@ module Antd.Codegen.PrinterSpec
 import Prelude
 
 import Antd.Codegen.Printer (printDecl, printImportSection, printModule, printModuleSection, printTyp)
-import Antd.Codegen.Types (PSDecl(..), PSDeclName(..), PSRecordRow, Typ(..))
+import Antd.Codegen.Types (PSDecl(..), PSDeclName(..), PSRecordRow, Typ(..), optionalPropTyp, requiredPropTyp)
 import Data.Maybe (Maybe(..))
 import Data.String (Pattern(..), contains)
 import Test.Spec (Spec, describe, it)
@@ -109,40 +109,54 @@ printerSpec =
       -- fn
       itShouldPrintTyp (TypFn { effectful: false
                               , input: []
-                              , output: TypInt
+                              , output: requiredPropTyp TypInt
                               }) $
         "Unit -> Int"
 
       itShouldPrintTyp (TypFn { effectful: false
-                              , input: [TypString]
-                              , output: TypInt
+                              , input: [ requiredPropTyp TypString
+                                       ]
+                              , output: requiredPropTyp TypInt
                               }) $
         "String -> Int"
 
       itShouldPrintTyp (TypFn { effectful: false
-                              , input: [TypString, TypBoolean]
-                              , output: TypArray TypInt
+                              , input: [ requiredPropTyp TypString
+                                       , requiredPropTyp TypBoolean
+                                       ]
+                              , output: requiredPropTyp (TypArray TypInt)
                               }) $
         "Fn2 String Boolean (Array Int)"
 
       itShouldPrintTyp (TypFn { effectful: true
                               , input: []
-                              , output: TypInt
+                              , output: requiredPropTyp TypInt
                               }) $
         "Effect Int"
 
       itShouldPrintTyp (TypFn { effectful: true
-                              , input: [TypString]
-                              , output: TypInt
+                              , input: [ requiredPropTyp TypString
+                                       ]
+                              , output: requiredPropTyp TypInt
                               }) $
         "EffectFn1 String Int"
 
       itShouldPrintTyp (TypFn { effectful: true
-                              , input: [TypString, TypBoolean]
-                              , output: TypArray TypInt
+                              , input: [ requiredPropTyp TypString
+                                       , requiredPropTyp TypBoolean
+                                       ]
+                              , output: requiredPropTyp (TypArray TypInt)
                               }) $
         "EffectFn2 String Boolean (Array Int)"
 
+      -- optional in fn
+      itShouldPrintTyp (TypFn { effectful: false
+                              , input: [ optionalPropTyp TypString
+                                       , requiredPropTyp TypBoolean
+                                       ]
+                              , output: optionalPropTyp (TypArray TypInt)
+                              }) $
+        "Fn2 (UndefinedOr String) Boolean (UndefinedOr (Array Int))"
 
 
 --      | TypRecord (Array ( { key :: String
