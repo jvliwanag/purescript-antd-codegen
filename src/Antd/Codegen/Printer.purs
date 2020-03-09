@@ -88,6 +88,11 @@ printDecl (PSDeclTypeRecord { name, rows }) =
             _, _ -> "      -- " <> t
         )
       `mapWithIndex` String.split (Pattern "\n") doc
+printDecl ( PSDeclForeignRC { funName, foreignComponentName, propsName }) =
+  "foreign import " <> foreignComponentName <> " :: ReactComponent " <> propsName
+  <> "\n"
+  <> "\n" <> funName <> " :: forall r. Coercible r " <> propsName <> " => r -> JSX"
+  <> "\n" <> funName <> " props = element _foo (coerce props)"
 
 printPropTyp :: PropTyp -> String
 printPropTyp { typ, required } =

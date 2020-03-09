@@ -106,3 +106,8 @@ data PSDecl
     { name :: String
     , rows :: Array PSRecordRow
     }
+  | PSDeclForeignRC
+    { funName :: String
+    , foreignComponentName :: String
+    , propsName :: String
+    }

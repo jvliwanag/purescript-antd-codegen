@@ -232,6 +232,19 @@ printerSpec =
             <> "\n    }"
           )
 
+      it "should print foreign react components" do
+        printDecl
+          ( PSDeclForeignRC
+            { funName: "foo"
+            , foreignComponentName: "_foo"
+            , propsName: "FooProps"
+            }
+          ) `shouldEqual`
+          ( "foreign import _foo :: ReactComponent FooProps"
+            <> "\n"
+            <> "\nfoo :: forall r. Coercible r FooProps => r -> JSX"
+            <> "\nfoo props = element _foo (coerce props)"
+          )
 
     describe "printer" do
       it "should print module" do
