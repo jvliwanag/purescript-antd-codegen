@@ -1,4 +1,4 @@
-module Antd.Codegen.Printer
+module Antd.Codegen.PSPrinter
        ( printModule
        , printModuleSection
        , printImportSection

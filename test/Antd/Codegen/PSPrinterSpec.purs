@@ -1,19 +1,19 @@
-module Antd.Codegen.PrinterSpec
-       ( printerSpec
+module Antd.Codegen.PSPrinterSpec
+       ( psPrinterSpec
        ) where
 
 import Prelude
 
-import Antd.Codegen.Printer (printDecl, printImportSection, printModule, printModuleSection, printTyp)
+import Antd.Codegen.PSPrinter (printDecl, printImportSection, printModule, printModuleSection, printTyp)
 import Antd.Codegen.Types (PSDecl(..), PSDeclName(..), PSRecordRow, Typ(..), optionalPropTyp, requiredPropTyp)
 import Data.Maybe (Maybe(..))
 import Data.String (Pattern(..), contains)
 import Test.Spec (Spec, describe, it)
 import Test.Spec.Assertions (shouldEqual, shouldSatisfy)
 
-printerSpec :: Spec Unit
-printerSpec =
-  describe "Printer" do
+psPrinterSpec :: Spec Unit
+psPrinterSpec =
+  describe "PSPrinter" do
     describe "module section" do
       it "should have module name" do
         printModuleSection "Foo" [] `shouldSatisfy`
