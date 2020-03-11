@@ -78,6 +78,7 @@ data Typ
                        }
                      ) )
 
+derive instance typEq :: Eq Typ
 derive instance typGeneric :: Generic Typ _
 
 instance typShow :: Show Typ where
@@ -98,6 +99,12 @@ data PSDeclName
   | PSDeclNameType { name :: String, includeConstructors :: Boolean }
   | PSDeclNameClass String
 
+derive instance psDeclNameEq :: Eq PSDeclName
+derive instance psDeclNameGeneric :: Generic PSDeclName _
+
+instance psDeclNameShow :: Show PSDeclName where
+  show = genericShow
+
 type PSImport = { mod :: String, names :: Array PSDeclName }
 
 type PSRecordRow =
@@ -116,6 +123,12 @@ data PSDecl
     , foreignComponentName :: String
     , propsName :: String
     }
+
+derive instance psDeclEq :: Eq PSDecl
+derive instance psDeclGeneric :: Generic PSDecl _
+
+instance psDeclShow :: Show PSDecl where
+  show = genericShow
 
 --
 
