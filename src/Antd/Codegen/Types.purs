@@ -35,7 +35,7 @@ type AntModule
 
 type Prop
   = { name :: String
-    , description :: String
+    , docDescription :: Maybe String
     , docType :: Maybe String
     , docDefault :: Maybe String
     , propTyp :: PropTyp
