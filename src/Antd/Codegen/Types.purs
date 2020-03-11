@@ -86,6 +86,7 @@ type PSModule
     , exports :: Array PSDeclName
     , importPrelude :: Boolean
     , imports :: Array PSImport
+    , declarations :: Array PSDecl
     }
 
 data PSDeclName

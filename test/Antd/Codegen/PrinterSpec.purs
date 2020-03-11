@@ -76,9 +76,9 @@ printerSpec =
           ] `shouldEqual`
           ( "import Prelude"
             <> "\n"
-            <> "\nimport Foo(fooFun)"
-            <> "\nimport Bar(BarType, BarData(..))"
-            <> "\nimport Baz(class BazClass)"
+            <> "\nimport Foo (fooFun)"
+            <> "\nimport Bar (BarType, BarData(..))"
+            <> "\nimport Baz (class BazClass)"
           )
 
     describe "types" do
@@ -249,24 +249,95 @@ printerSpec =
     describe "printer" do
       it "should print module" do
         printModule
-          { name: "Foo.Bar"
+          { name: "Antd.Foo"
           , exports:
-            [ PSDeclNameFun "myFun"
+            [ PSDeclNameType { includeConstructors: false
+                             , name: "FooProps"
+                             }
+            , PSDeclNameFun "foo"
             ]
           , importPrelude: true
           , imports:
-            [ { mod: "Foo"
-              , names: [ PSDeclNameFun "fooFun" ]
+            [ { mod: "Effect"
+              , names: [ PSDeclNameType { includeConstructors: false
+                                        , name: "Effect"
+                                        }
+                       ]
+              }
+            , { mod: "Literals"
+              , names: [ PSDeclNameType { includeConstructors: false
+                                        , name: "StringLit"
+                                        }
+                       ]
+              }
+            , { mod: "React.Basic"
+              , names: [ PSDeclNameType { includeConstructors: false
+                                        , name: "JSX"
+                                        }
+                       , PSDeclNameType { includeConstructors: false
+                                        , name: "ReactComponent"
+                                        }
+                       , PSDeclNameFun "element"
+                       ]
+              }
+            , { mod: "Untagged.Coercible"
+              , names: [ PSDeclNameClass "Coercible"
+                       , PSDeclNameFun "coerce"
+                       ]
+              }
+            , { mod: "Untagged.Union"
+              , names: [ PSDeclNameType { includeConstructors: false
+                                        , name: "|+|"
+                                        }
+                       , PSDeclNameType { includeConstructors: false
+                                        , name: "UndefinedOr"
+                                        }
+                       ]
               }
             ]
+          , declarations:
+            [ PSDeclTypeRecord
+              { name: "FooProps"
+              , rows:
+                [ recordRow "text" false (TypOneOf [TypString, TypNode]) Nothing
+                , recordRow "onClick" false (TypFn { effectful: true
+                                                   , input: []
+                                                   , output: requiredPropTyp TypUnit
+                                                   }
+                                            ) (Just "on click")
+                , recordRow "children" false (TypArray TypNode) Nothing
+                ]
+              }
+            , PSDeclForeignRC { funName: "foo"
+                              , foreignComponentName: "_foo"
+                              , propsName: "FooProps"
+                              }
+            ]
           } `shouldEqual`
-          ( "module Foo.Bar"
-            <> "\n  ( myFun"
+          (       "module Antd.Foo"
+            <> "\n  ( FooProps"
+            <> "\n  , foo"
             <> "\n  ) where"
             <> "\n"
             <> "\nimport Prelude"
             <> "\n"
-            <> "\nimport Foo(fooFun)"
+            <> "\nimport Effect (Effect)"
+            <> "\nimport Literals (StringLit)"
+            <> "\nimport React.Basic (JSX, ReactComponent, element)"
+            <> "\nimport Untagged.Coercible (class Coercible, coerce)"
+            <> "\nimport Untagged.Union (type (|+|), UndefinedOr)"
+            <> "\n"
+            <> "\ntype FooProps"
+            <> "\n  = { text :: UndefinedOr (String |+| JSX)"
+            <> "\n      -- on click"
+            <> "\n    , onClick :: UndefinedOr (Effect Unit)"
+            <> "\n    , children :: UndefinedOr (Array JSX)"
+            <> "\n    }"
+            <> "\n"
+            <> "\nforeign import _foo :: ReactComponent FooProps"
+            <> "\n"
+            <> "\nfoo :: forall r. Coercible r FooProps => r -> JSX"
+            <> "\nfoo props = element _foo (coerce props)"
             <> "\n"
           )
 

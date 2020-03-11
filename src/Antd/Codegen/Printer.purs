@@ -21,10 +21,11 @@ import Data.String.Regex.Flags (noFlags)
 import Partial.Unsafe (unsafePartial)
 
 printModule :: PSModule -> String
-printModule { name, exports, importPrelude, imports } =
+printModule { name, exports, importPrelude, imports, declarations } =
   printModuleSection name exports
   <> "\n"
   <> "\n" <> printImportSection importPrelude imports
+  <> (fold $ (\s -> "\n\n" <> printDecl s) <$> declarations)
   <> "\n"
 
 printModuleSection :: String -> Array PSDeclName -> String
@@ -54,7 +55,7 @@ printImportSection importPrelude imports =
       _ -> "\n" <> (Array.intercalate "\n" $ printImport <$> imports)
 
     printImport { mod, names } =
-      "import " <> mod <> "(" <> namesSection <> ")"
+      "import " <> mod <> " (" <> namesSection <> ")"
       where
         namesSection = Array.intercalate ", " $ printDeclName <$> names
 
