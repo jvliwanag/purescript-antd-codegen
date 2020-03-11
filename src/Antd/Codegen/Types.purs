@@ -11,6 +11,10 @@ module Antd.Codegen.Types
        , PSImport
        , PSRecordRow
        , PSDecl(..)
+         -- js syntax
+       , JSBinding
+       , JSExport
+       , jsExport
        ) where
 
 import Prelude
@@ -112,3 +116,18 @@ data PSDecl
     , foreignComponentName :: String
     , propsName :: String
     }
+
+--
+
+type JSBinding
+  = { antSubmodule :: String
+    , exports :: Array JSExport
+    }
+
+type JSExport
+  = { name :: String
+    , member :: Maybe String
+    }
+
+jsExport :: String -> Maybe String -> JSExport
+jsExport name member = { name, member }
