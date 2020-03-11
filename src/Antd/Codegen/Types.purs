@@ -1,6 +1,7 @@
 module Antd.Codegen.Types
        ( AntModule
-       , Prop(..)
+       , Prop
+       , prop
        , PropTyp
        , requiredPropTyp
        , optionalPropTyp
@@ -21,7 +22,7 @@ import Prelude
 
 import Data.Generic.Rep (class Generic)
 import Data.Generic.Rep.Show (genericShow)
-import Data.Maybe (Maybe)
+import Data.Maybe (Maybe(..))
 
 
 type AntModule
@@ -40,6 +41,15 @@ type Prop
     , docDefault :: Maybe String
     , propTyp :: PropTyp
     }
+
+prop :: String -> PropTyp -> Prop
+prop name propTyp =
+  { name
+  , propTyp
+  , docDescription: Nothing
+  , docType: Nothing
+  , docDefault: Nothing
+  }
 
 type PropTyp =
   { typ :: Typ
