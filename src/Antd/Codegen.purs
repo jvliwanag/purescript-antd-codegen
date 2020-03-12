@@ -11,73 +11,74 @@ import Effect.Console (log)
 
 tableModule :: AntModule
 tableModule =
-  { name: "Table"
-  , primaryProps:
-    [ { name: "tableLayout"
-      , docDescription: Just "[table-layout](https://developer.mozilla.org/en-US/docs/Web/CSS/table-layout) attribute of table element"
-      , docType: Just "- | `auto` | `fixed`"
-      , docDefault: Just "-<hr />`fixed` when header/columns are fixed, or using `column.ellipsis`"
-      , propTyp:
+  { primaryComponent:
+    { name: "Table"
+    , props:
+      [ { name: "tableLayout"
+        , docDescription: Just "[table-layout](https://developer.mozilla.org/en-US/docs/Web/CSS/table-layout) attribute of table element"
+        , docType: Just "- | `auto` | `fixed`"
+        , docDefault: Just "-<hr />`fixed` when header/columns are fixed, or using `column.ellipsis`"
+        , propTyp:
         { required: false
         , typ: TypOneOf [ TypStringLit "auto", TypStringLit "fixed" ]
         }
-      }
+        }
 
-    , { name: "bordered"
-      , docDescription: Just "Whether to show all table borders"
-      , docType: Just "boolean"
-      , docDefault: Just "`false`"
-      , propTyp:
+      , { name: "bordered"
+        , docDescription: Just "Whether to show all table borders"
+        , docType: Just "boolean"
+        , docDefault: Just "`false`"
+        , propTyp:
         { required: false
         , typ: TypBoolean
         }
-      }
+        }
 
-    , { name: "columns"
-      , docDescription: Just "Columns of table"
-      , docType: Just "[ColumnProps](#Column)[]"
-      , docDefault: Just "-"
-      , propTyp:
+      , { name: "columns"
+        , docDescription: Just "Columns of table"
+        , docType: Just "[ColumnProps](#Column)[]"
+        , docDefault: Just "-"
+        , propTyp:
         { required: false
         , typ: TypArray (TypRef { name: "ColumnProps" })
         }
-      }
+        }
 
-    , { name: "components"
-      , docDescription: Just "Override default table elements"
-      , docType: Just "[TableComponents](https://git.io/fANxz)"
-      , docDefault: Just "-"
-      , propTyp:
+      , { name: "components"
+        , docDescription: Just "Override default table elements"
+        , docType: Just "[TableComponents](https://git.io/fANxz)"
+        , docDefault: Just "-"
+        , propTyp:
         { required: false
         , typ: TypUnknown
         }
-      }
+        }
 
-    , { name: "dataSource"
-      , docDescription: Just "Data record array to be displayed"
-      , docType: Just "any[]"
-      , docDefault: Just "-"
-      , propTyp:
+      , { name: "dataSource"
+        , docDescription: Just "Data record array to be displayed"
+        , docType: Just "any[]"
+        , docDefault: Just "-"
+        , propTyp:
         { required: false
         , typ: TypArray TypUnknown
         }
-      }
+        }
 
-    , { name: "expandable"
-      , docDescription: Just "Config expandable content"
-      , docType: Just "[expandable](#expandable)"
-      , docDefault: Just "-"
-      , propTyp:
+      , { name: "expandable"
+        , docDescription: Just "Config expandable content"
+        , docType: Just "[expandable](#expandable)"
+        , docDefault: Just "-"
+        , propTyp:
         { required: false
         , typ: TypRef ({ name: "Expandable" })
         }
-      }
+        }
 
-    , { name: "footer"
-      , docDescription: Just "Table footer renderer"
-      , docType: Just "Function(currentPageData)"
-      , docDefault: Just "-"
-      , propTyp:
+      , { name: "footer"
+        , docDescription: Just "Table footer renderer"
+        , docType: Just "Function(currentPageData)"
+        , docDefault: Just "-"
+        , propTyp:
         { required: false
         , typ: TypFn { effectful: false
                      , input: [ requiredPropTyp TypUnknown
@@ -85,23 +86,23 @@ tableModule =
                      , output: requiredPropTyp TypNode
                      }
         }
-      }
+        }
 
-    , { name: "loading"
-      , docDescription: Just "Loading status of table"
-      , docType: Just "boolean|[object](https://ant.design/components/spin-cn/#API) ([more](https://github.com/ant-design/ant-design/issues/4544#issuecomment-271533135))"
-      , docDefault: Just "`false`"
-      , propTyp:
+      , { name: "loading"
+        , docDescription: Just "Loading status of table"
+        , docType: Just "boolean|[object](https://ant.design/components/spin-cn/#API) ([more](https://github.com/ant-design/ant-design/issues/4544#issuecomment-271533135))"
+        , docDefault: Just "`false`"
+        , propTyp:
         { required: false
         , typ: TypOneOf [ TypBoolean ]
         }
-      }
+        }
 
-    , { name: "locale"
-      , docDescription: Just "i18n text including filter, sort, empty text, etc"
-      , docType: Just "object"
-      , docDefault: Just "filterConfirm: 'Ok' <br> filterReset: 'Reset' <br> emptyText: 'No Data' <br> [Default](https: //github.com/ant-design/ant-design/issues/575#issuecomment-159169511)"
-      , propTyp:
+      , { name: "locale"
+        , docDescription: Just "i18n text including filter, sort, empty text, etc"
+        , docType: Just "object"
+        , docDefault: Just "filterConfirm: 'Ok' <br> filterReset: 'Reset' <br> emptyText: 'No Data' <br> [Default](https: //github.com/ant-design/ant-design/issues/575#issuecomment-159169511)"
+        , propTyp:
         { required: false
         , typ: TypRecord
           [ { key: "filterConfirm"
@@ -124,99 +125,99 @@ tableModule =
             }
           ]
         }
-      }
+        }
 
-    , { name: "pagination"
-      , docDescription: Just "Config of pagination. You can ref table pagination [config](#pagination) or full [`pagination`](/components/pagination/) document, hide it by setting it to `false`"
-      , docType: Just "object"
-      , docDefault: Just "-"
-      , propTyp:
+      , { name: "pagination"
+        , docDescription: Just "Config of pagination. You can ref table pagination [config](#pagination) or full [`pagination`](/components/pagination/) document, hide it by setting it to `false`"
+        , docType: Just "object"
+        , docDefault: Just "-"
+        , propTyp:
         { required: false
         , typ: TypUnknown
         }
-      }
+        }
 
-    , { name: "rowClassName"
-      , docDescription: Just "Row's className"
-      , docType: Just "Function(record, index):string"
-      , docDefault: Just "-"
-      , propTyp:
+      , { name: "rowClassName"
+        , docDescription: Just "Row's className"
+        , docType: Just "Function(record, index):string"
+        , docDefault: Just "-"
+        , propTyp:
         { required: false
         , typ: TypUnknown
         }
-      }
+        }
 
-    , { name: "rowKey"
-      , docDescription: Just "Row's unique key, could be a string or function that returns a string"
-      , docType: Just "string|Function(record):string"
-      , docDefault: Just "`key`"
-      , propTyp:
+      , { name: "rowKey"
+        , docDescription: Just "Row's unique key, could be a string or function that returns a string"
+        , docType: Just "string|Function(record):string"
+        , docDefault: Just "`key`"
+        , propTyp:
         { required: false
         , typ: TypString
         }
-      }
+        }
 
-    , { name: "rowSelection"
-      , docDescription: Just "Row selection [config](#rowSelection)"
-      , docType: Just "object"
-      , docDefault: Just "null"
-      , propTyp:
+      , { name: "rowSelection"
+        , docDescription: Just "Row selection [config](#rowSelection)"
+        , docType: Just "object"
+        , docDefault: Just "null"
+        , propTyp:
         { required: false
         , typ: TypRef { name: "RowSelection" }
         }
-      }
+        }
 
-    , { name: "scroll"
-      , docDescription: Just "Whether the table can be scrollable, [config](#scroll)"
-      , docType: Just "object"
-      , docDefault: Just "-"
-      , propTyp:
+      , { name: "scroll"
+        , docDescription: Just "Whether the table can be scrollable, [config](#scroll)"
+        , docType: Just "object"
+        , docDefault: Just "-"
+        , propTyp:
         { required: false
         , typ: TypRef { name: "Scroll" }
         }
-      }
+        }
 
-    , { name: "showHeader"
-      , docDescription: Just "Whether to show table header"
-      , docType: Just "boolean"
-      , docDefault: Just "`true`"
-      , propTyp:
+      , { name: "showHeader"
+        , docDescription: Just "Whether to show table header"
+        , docType: Just "boolean"
+        , docDefault: Just "`true`"
+        , propTyp:
         { required: false
         , typ: TypBoolean
         }
-      }
+        }
 
-    , { name: "size"
-      , docDescription: Just "Size of table"
-      , docType: Just "`default` | `middle` | `small`"
-      , docDefault: Just "`default`"
-      , propTyp:
+      , { name: "size"
+        , docDescription: Just "Size of table"
+        , docType: Just "`default` | `middle` | `small`"
+        , docDefault: Just "`default`"
+        , propTyp:
         { required: false
         , typ: TypOneOf [ TypStringLit "default"
                         , TypStringLit "middle"
                         , TypStringLit "small"
                         ]
         }
-      }
+        }
 
-    , { name: "summary"
-      , docDescription: Just "Summary content"
-      , docType: Just "(currentData) => ReactNode"
-      , docDefault: Just "-"
-      , propTyp:
+      , { name: "summary"
+        , docDescription: Just "Summary content"
+        , docType: Just "(currentData) => ReactNode"
+        , docDefault: Just "-"
+        , propTyp:
         { required: false
         , typ: TypFn { effectful: false
                      , input: [ requiredPropTyp TypUnknown ]
                      , output: requiredPropTyp TypNode
                      }
         }
-      }
+        }
 
-    , { name: "title"
-      , docDescription: Just "Table title renderer"
-      , docType: Just "Function(currentPageData)"
-      , docDefault: Just "-"
-      , propTyp:
+      , { name: "title"
+        , docDescription: Just "Table title renderer"
+        , docType: Just "Function(currentPageData)"
+        , docDefault: Just "-"
+        , propTyp:
         { required: false
         , typ: TypFn { effectful: false
                      , input: [ requiredPropTyp TypUnknown
@@ -224,13 +225,13 @@ tableModule =
                      , output: requiredPropTyp TypNode
                      }
         }
-      }
+        }
 
-    , { name: "onChange"
-      , docDescription: Just "Callback executed when pagination, filters or sorter is changed"
-      , docType: Just "Function(pagination, filters, sorter, extra: { currentDataSource: [] })"
-      , docDefault: Just "-"
-      , propTyp:
+      , { name: "onChange"
+        , docDescription: Just "Callback executed when pagination, filters or sorter is changed"
+        , docType: Just "Function(pagination, filters, sorter, extra: { currentDataSource: [] })"
+        , docDefault: Just "-"
+        , propTyp:
         { required: false
         , typ: TypFn { effectful: true
                      , input: [ requiredPropTyp TypUnknown
@@ -241,13 +242,13 @@ tableModule =
                      , output: requiredPropTyp TypUnit
                      }
         }
-      }
+        }
 
-    , { name: "onHeaderRow"
-      , docDescription: Just "Set props on per header row"
-      , docType: Just "Function(column, index)"
-      , docDefault: Just "-"
-      , propTyp:
+      , { name: "onHeaderRow"
+        , docDescription: Just "Set props on per header row"
+        , docType: Just "Function(column, index)"
+        , docDefault: Just "-"
+        , propTyp:
         { required: false
         , typ: TypFn { effectful: true
                      , input: [ requiredPropTyp TypUnknown
@@ -257,13 +258,13 @@ tableModule =
                      , output: requiredPropTyp TypUnit
                      }
         }
-      }
+        }
 
-    , { name: "onRow"
-      , docDescription: Just "Set props on per row"
-      , docType: Just "Function(record, index)"
-      , docDefault: Just "-"
-      , propTyp:
+      , { name: "onRow"
+        , docDescription: Just "Set props on per row"
+        , docType: Just "Function(record, index)"
+        , docDefault: Just "-"
+        , propTyp:
         { required: false
         , typ: TypFn { effectful: true
                      , input: [ requiredPropTyp TypUnknown
@@ -272,13 +273,13 @@ tableModule =
                      , output: requiredPropTyp TypUnit
                      }
         }
-      }
+        }
 
-    , { name: "getPopupContainer"
-      , docDescription: Just "the render container of dropdowns in table"
-      , docType: Just "(triggerNode) => HTMLElement"
-      , docDefault: Just "`() => TableHtmlElement`"
-      , propTyp:
+      , { name: "getPopupContainer"
+        , docDescription: Just "the render container of dropdowns in table"
+        , docType: Just "(triggerNode) => HTMLElement"
+        , docDefault: Just "`() => TableHtmlElement`"
+        , propTyp:
         { required: false
         , typ: TypFn { effectful: false
                      , input: [ requiredPropTyp TypUnknown
@@ -286,18 +287,19 @@ tableModule =
                      , output: requiredPropTyp TypUnknown
                      }
         }
-      }
+        }
 
-    , { name: "sortDirections"
-      , docDescription: Just "supported sort way, could be `'ascend'`, `'descend'`"
-      , docType: Just "Array"
-      , docDefault: Just "`['ascend', 'descend']`"
-      , propTyp:
+      , { name: "sortDirections"
+        , docDescription: Just "supported sort way, could be `'ascend'`, `'descend'`"
+        , docType: Just "Array"
+        , docDefault: Just "`['ascend', 'descend']`"
+        , propTyp:
         { required: false
         , typ: TypArray (TypOneOf [ TypStringLit "ascend", TypStringLit "descend" ])
         }
-      }
-    ]
+        }
+      ]
+    }
   , subComponents:
     [
     ]

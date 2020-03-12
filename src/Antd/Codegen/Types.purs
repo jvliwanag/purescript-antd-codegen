@@ -1,5 +1,6 @@
 module Antd.Codegen.Types
        ( AntModule
+       , Component
        , Prop
        , prop
        , PropTyp
@@ -26,13 +27,14 @@ import Data.Maybe (Maybe(..))
 
 
 type AntModule
-  = { name :: String
-    , primaryProps :: Array Prop
-    , subComponents ::
-         Array { name :: String
-               , props :: Array Prop
-               }
+  = { primaryComponent :: Component
+    , subComponents :: Array Component
     }
+
+type Component =
+  { name :: String
+  , props :: Array Prop
+  }
 
 type Prop
   = { name :: String
