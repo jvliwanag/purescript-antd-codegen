@@ -6,6 +6,7 @@ import Prelude
 
 import Antd.Codegen.Types (AntModule, Component, PSDecl(..), PSDeclName(..), PSModule, PSRecordRow, Prop, PropTyp, Typ(..))
 import Data.Array as Array
+import Data.Foldable (class Foldable, foldl)
 import Data.Map (Map)
 import Data.Map as Map
 import Data.Maybe (Maybe(..))
@@ -40,7 +41,6 @@ addImportClass :: String -> String -> State -> State
 addImportClass mod name =
   addImport mod $ PSDeclNameClass name
 
-
 addImport :: String -> PSDeclName -> State -> State
 addImport mod name prev =
   prev { imports = newImports
@@ -73,8 +73,36 @@ addImportsForPropTyp { required, typ } =
 
 -- TODO add others after writing tests
 addImportsForTyp :: Typ -> State -> State
+addImportsForTyp TypString = addImportPrelude
 addImportsForTyp TypInt = addImportPrelude
-addImportsForTyp _ = identity
+addImportsForTyp TypNumber = addImportPrelude
+addImportsForTyp TypBoolean = addImportPrelude
+addImportsForTyp TypUnit = addImportPrelude
+addImportsForTyp TypUnknown = addImportType "Foreign" "Foreign" false
+addImportsForTyp (TypStringLit _) = addImportType "Literals" "StringLit" false
+addImportsForTyp (TypBooleanLit _) = addImportType "Literals" "BooleanLit" false
+addImportsForTyp TypNode = addImportType "React.Basic" "JSX" false
+addImportsForTyp (TypOneOf options) =
+  addImportType "Untagged.Union" "|+|" false >>>
+  traverseStateBuilders addImportsForTyp options
+addImportsForTyp (TypFn { effectful, input, output }) =
+  addImportsForPropTyp output >>>
+  traverseStateBuilders addImportsForPropTyp input >>>
+  importUncurried
+  where
+    importUncurried = case effectful, input of
+      false, [] -> addImportPrelude -- for Unit input
+      false, [i0] -> identity
+      false, is -> addImportType "Data.Function.Uncurried" ("Fn" <> show (Array.length is)) false
+      true, [] -> addImportType "Effect" "Effect" false
+      true, is -> addImportType "Effect.Uncurried" ("EffectFn" <> show (Array.length is)) false
+addImportsForTyp (TypRecord fields) =
+  traverseStateBuilders (addImportsForPropTyp <<< _.propTyp) fields
+addImportsForTyp (TypArray a) =
+  addImportsForTyp a
+-- we currently assume that refs defined here are within the module
+-- please add a test when this assumption no longer holds ;)
+addImportsForTyp (TypRef _) = identity
 
 addDecls :: Array PSDecl -> State -> State
 addDecls decls prev = prev { declarations = prev.declarations <> decls }
@@ -97,7 +125,7 @@ addComponent { name, props } =
   ]
   where
     importPropTyps =
-      Array.foldl (\acc p -> addImportsForPropTyp p.propTyp) identity props
+      traverseStateBuilders (addImportsForPropTyp <<< _.propTyp) props
 
     pcn = mkCompNames name
 
@@ -154,6 +182,11 @@ propToPSRecordRow p =
       [] -> Nothing
       _ -> Just $ Array.intercalate "\n" docSections
 
+
+traverseStateBuilders :: forall f a. Foldable f => (a -> State -> State) -> f a -> State -> State
+traverseStateBuilders f as =
+  foldl (\acc a -> acc >>> f a)  identity as
+  -- also see: Data.Monoid.Endo
 
 type CompNames =
   { funName :: String
