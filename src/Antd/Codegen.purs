@@ -4,6 +4,8 @@ module Antd.Codegen
 
 import Prelude
 
+import Antd.Codegen.ModuleBundler (createPSModule)
+import Antd.Codegen.PSPrinter (printModule)
 import Antd.Codegen.Types (AntModule, Prop, Typ(..), requiredPropTyp)
 import Data.Maybe (Maybe(..))
 import Effect (Effect)
@@ -307,7 +309,11 @@ tableModule =
 
 run :: Effect Unit
 run = do
-  log "Hello World"
+  log sampleOut
+
+sampleOut :: String
+sampleOut =
+  tableModule # createPSModule # printModule
 
 columnPropsDef :: Array Prop
 columnPropsDef =
