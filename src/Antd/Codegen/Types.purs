@@ -107,11 +107,12 @@ type PSModule
     }
 
 data PSDeclName
-  = PSDeclNameFun String
+  = PSDeclNameClass String
   | PSDeclNameType { name :: String, includeConstructors :: Boolean }
-  | PSDeclNameClass String
+  | PSDeclNameFun String
 
 derive instance psDeclNameEq :: Eq PSDeclName
+derive instance psDeclNameOrd :: Ord PSDeclName
 derive instance psDeclNameGeneric :: Generic PSDeclName _
 
 instance psDeclNameShow :: Show PSDeclName where
