@@ -93,7 +93,7 @@ printDecl ( PSDeclForeignRC { funName, foreignComponentName, propsName }) =
   "foreign import " <> foreignComponentName <> " :: ReactComponent " <> propsName
   <> "\n"
   <> "\n" <> funName <> " :: forall r. Coercible r " <> propsName <> " => r -> JSX"
-  <> "\n" <> funName <> " props = element _foo (coerce props)"
+  <> "\n" <> funName <> " props = element " <> foreignComponentName <> " (coerce props)"
 
 printPropTyp :: PropTyp -> String
 printPropTyp { typ, required } =
