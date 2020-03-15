@@ -17,7 +17,9 @@ import Data.Tuple (uncurry)
 
 createPSModule :: AntModule -> PSModule
 createPSModule am =
-  build am.primaryComponent.name $ addComponent am.primaryComponent
+  build am.primaryComponent.name
+  $ addComponent am.primaryComponent
+  >>> traverseStateBuilders addComponent am.subComponents
 
 type State =
   { importPrelude :: Boolean

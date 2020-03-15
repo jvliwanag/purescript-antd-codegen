@@ -11,7 +11,7 @@ import Data.Foldable (traverse_)
 import Data.Maybe (isJust, isNothing)
 import Effect.Aff (Aff)
 import Test.Spec (Spec, describe, it)
-import Test.Spec.Assertions (shouldEqual, shouldSatisfy)
+import Test.Spec.Assertions (shouldContain, shouldEqual, shouldSatisfy)
 
 moduleBundlerSpec :: Spec Unit
 moduleBundlerSpec =
@@ -157,6 +157,13 @@ moduleBundlerSpec =
       let mod = moduleWithPropTyp (optionalPropTyp TypInt)
       mod.imports `shouldContainImport` (importType "Untagged.Union" "UndefinedOr")
       mod.importPrelude `shouldEqual` true
+
+    it "should include subComponents" do
+      ( createPSModule
+        { primaryComponent: { name: "Foo", props: [] }
+        , subComponents: [ { name: "Bar", props: [] } ]
+        }
+      ).exports `shouldContain` (PSDeclNameFun "bar")
 
 emptyModule :: PSModule
 emptyModule = createFooPSModule []
