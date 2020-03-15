@@ -4,11 +4,11 @@ module Antd.Codegen.ModuleBundlerSpec
 
 import Prelude
 
-import Antd.Codegen.ModuleBundler (createPSModule)
-import Antd.Codegen.Types (PSDecl(..), PSDeclName(..), PSImport, PSModule, Prop, PropTyp, Typ(..), optionalPropTyp, prop, requiredPropTyp)
+import Antd.Codegen.ModuleBundler (createModuleBundle)
+import Antd.Codegen.Types (PSDecl(..), PSDeclName(..), PSImport, PSModule, Prop, PropTyp, Typ(..), ModuleBundle, optionalPropTyp, prop, requiredPropTyp)
 import Data.Array as Array
 import Data.Foldable (traverse_)
-import Data.Maybe (isJust, isNothing)
+import Data.Maybe (Maybe(..), isJust, isNothing)
 import Effect.Aff (Aff)
 import Test.Spec (Spec, describe, it)
 import Test.Spec.Assertions (shouldContain, shouldEqual, shouldSatisfy)
@@ -159,11 +159,31 @@ moduleBundlerSpec =
       mod.importPrelude `shouldEqual` true
 
     it "should include subComponents" do
-      ( createPSModule
+      ( createModuleBundle
         { primaryComponent: { name: "Foo", props: [] }
         , subComponents: [ { name: "Bar", props: [] } ]
         }
-      ).exports `shouldContain` (PSDeclNameFun "bar")
+      ).psModule.exports `shouldContain` (PSDeclNameFun "bar")
+
+    it "should have js bindings for primary and sub components" do
+      ( createModuleBundle
+          { primaryComponent:
+            { name: "Foo"
+            , props: []
+            }
+          , subComponents:
+            [ { name: "Bar"
+              , props: []
+              }
+            ]
+          }
+      ).jsBinding `shouldEqual`
+        { antSubmodule: "Foo"
+        , exports:
+          [ { name: "_foo", member: Nothing }
+          , { name: "_bar", member: Just "Bar" }
+          ]
+        }
 
 emptyModule :: PSModule
 emptyModule = createFooPSModule []
@@ -178,8 +198,12 @@ moduleWithPropTyp propTyp =
                     ]
 
 createFooPSModule :: Array Prop -> PSModule
-createFooPSModule primaryProps =
-  createPSModule
+createFooPSModule =
+  _.psModule <<< createFooModuleBundle
+
+createFooModuleBundle :: Array Prop -> ModuleBundle
+createFooModuleBundle primaryProps =
+  createModuleBundle
   { primaryComponent:
     { name: "Foo"
     , props: primaryProps

@@ -1,10 +1,10 @@
 module Antd.Codegen.ModuleBundler
-       ( createPSModule
+       ( createModuleBundle
        ) where
 
 import Prelude
 
-import Antd.Codegen.Types (AntModule, Component, PSDecl(..), PSDeclName(..), PSModule, PSRecordRow, Prop, PropTyp, Typ(..))
+import Antd.Codegen.Types (AntModule, Component, JSExport, ModuleBundle, PSDecl(..), PSDeclName(..), PSRecordRow, Prop, PropTyp, Typ(..))
 import Data.Array as Array
 import Data.Foldable (class Foldable, foldl)
 import Data.Map (Map)
@@ -15,17 +15,18 @@ import Data.Set as Set
 import Data.String as String
 import Data.Tuple (uncurry)
 
-createPSModule :: AntModule -> PSModule
-createPSModule am =
+createModuleBundle :: AntModule -> ModuleBundle
+createModuleBundle am =
   build am.primaryComponent.name
-  $ addComponent am.primaryComponent
-  >>> traverseStateBuilders addComponent am.subComponents
+  $ addComponent true am.primaryComponent
+  >>> traverseStateBuilders (addComponent false) am.subComponents
 
 type State =
   { importPrelude :: Boolean
   , exports :: Array PSDeclName
   , imports :: Map String (Set PSDeclName)
   , declarations :: Array PSDecl
+  , jsExports :: Array JSExport
   }
 
 addImportPrelude :: State -> State
@@ -64,6 +65,11 @@ addExportFun name =
 addExport :: PSDeclName -> State -> State
 addExport name prev =
   prev { exports = Array.snoc prev.exports name
+       }
+
+addJSExport :: JSExport -> State -> State
+addJSExport b prev =
+  prev { jsExports = Array.snoc prev.jsExports b
        }
 
 addImportsForPropTyp :: PropTyp -> State -> State
@@ -109,8 +115,8 @@ addImportsForTyp (TypRef _) = identity
 addDecls :: Array PSDecl -> State -> State
 addDecls decls prev = prev { declarations = prev.declarations <> decls }
 
-addComponent :: Component -> State -> State
-addComponent { name, props } =
+addComponent :: Boolean -> Component -> State -> State
+addComponent isPrimary { name, props } =
   addComponentImports
   >>> importPropTyps
   >>> addExport ( PSDeclNameType { name: pcn.propsName
@@ -125,11 +131,17 @@ addComponent { name, props } =
       }
   , PSDeclForeignRC pcn
   ]
+  >>> addJSExport { name: pcn.foreignComponentName, member: jsMember }
   where
     importPropTyps =
       traverseStateBuilders (addImportsForPropTyp <<< _.propTyp) props
 
     pcn = mkCompNames name
+
+    jsMember =
+      if isPrimary
+      then Nothing
+      else Just name
 
 addComponentImports :: State -> State
 addComponentImports =
@@ -138,14 +150,21 @@ addComponentImports =
   addImportClass "Untagged.Coercible" "Coercible" >>>
   addImportFun   "Untagged.Coercible" "coerce"
 
-build :: String -> (State -> State) -> PSModule
+build :: String -> (State -> State) -> ModuleBundle
 build name builderF =
-  { name: "Antd." <> name
-  , exports: finalState.exports
-  , importPrelude: finalState.importPrelude
-  , imports
-  , declarations: finalState.declarations
+  { psModule:
+    { name: "Antd." <> name
+    , exports: finalState.exports
+    , importPrelude: finalState.importPrelude
+    , imports
+    , declarations: finalState.declarations
+    }
+  , jsBinding:
+    { antSubmodule: name
+    , exports: finalState.jsExports
+    }
   }
+
 
   where
     initState =
@@ -153,6 +172,7 @@ build name builderF =
       , exports: mempty
       , imports: mempty
       , declarations: mempty
+      , jsExports: mempty
       }
 
     finalState = builderF initState
