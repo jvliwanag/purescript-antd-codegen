@@ -4,6 +4,7 @@ import Prelude
 
 import Antd.Codegen as Codegen
 import Effect (Effect)
+import Effect.Aff (launchAff_)
 
 main :: Effect Unit
-main = Codegen.run
+main = launchAff_ Codegen.run

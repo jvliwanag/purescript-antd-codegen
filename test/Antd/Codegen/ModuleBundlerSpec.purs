@@ -16,6 +16,9 @@ import Test.Spec.Assertions (shouldContain, shouldEqual, shouldSatisfy)
 moduleBundlerSpec :: Spec Unit
 moduleBundlerSpec =
   describe "ModuleBundler" do
+    it "should have the correct bundle name" do
+      emptyModuleBundle.name `shouldEqual` "Foo"
+
     it "should create a ps module with a proper name" do
       emptyModule.name `shouldEqual` "Antd.Foo"
 
@@ -186,7 +189,10 @@ moduleBundlerSpec =
         }
 
 emptyModule :: PSModule
-emptyModule = createFooPSModule []
+emptyModule = emptyModuleBundle.psModule
+
+emptyModuleBundle :: ModuleBundle
+emptyModuleBundle = createFooModuleBundle []
 
 moduleWithRequiredTyp :: Typ -> PSModule
 moduleWithRequiredTyp =

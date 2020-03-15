@@ -4,12 +4,70 @@ module Antd.Codegen
 
 import Prelude
 
-import Antd.Codegen.ModuleBundler (createPSModule)
+import Antd.Codegen.JSPrinter (printJSBinding)
+import Antd.Codegen.ModuleBundler (createModuleBundle)
 import Antd.Codegen.PSPrinter (printModule)
-import Antd.Codegen.Types (AntModule, Prop, Typ(..), requiredPropTyp)
+import Antd.Codegen.Types (AntModule, ModuleBundle, PSModule, Prop, Typ(..), JSBinding, requiredPropTyp)
+import Data.Foldable (for_, traverse_)
 import Data.Maybe (Maybe(..))
-import Effect (Effect)
-import Effect.Console (log)
+import Effect.Aff (Aff)
+import Effect.Class.Console (log)
+import Node.Encoding (Encoding(..))
+import Node.FS.Aff (exists, mkdir, readdir, rmdir, unlink, writeTextFile)
+import Node.Path (FilePath)
+import Node.Path as Path
+
+run :: Aff Unit
+run = do
+  let bundles = createModuleBundle <$> modules
+  prepSrcDir
+  for_ bundles saveModuleBundle
+  log "Done!"
+
+modules :: Array AntModule
+modules =
+  [ tableModule
+  ]
+
+generatedSrcDir :: FilePath
+generatedSrcDir =
+  Path.concat ["generated", "src", "generated"]
+
+prepSrcDir :: Aff Unit
+prepSrcDir = do
+  clearDir
+  mkdir generatedSrcDir
+
+  where
+    clearDir =
+      whenM (exists generatedSrcDir)
+      ( do
+           fileNames <- readdir generatedSrcDir
+           let paths = fileNames <#> \n -> Path.concat [ generatedSrcDir, n ]
+           traverse_ unlink paths
+           rmdir generatedSrcDir
+      )
+
+saveModuleBundle :: ModuleBundle -> Aff Unit
+saveModuleBundle { name, psModule, jsBinding } =
+  savePSModule name psModule *> saveJSBinding name jsBinding
+
+savePSModule :: String -> PSModule -> Aff Unit
+savePSModule name m = do
+  log $ "writing " <> path
+  writeTextFile UTF8 path code
+  where
+    path = Path.concat [ generatedSrcDir, name <> ".purs" ]
+    code = printModule m
+
+saveJSBinding :: String -> JSBinding -> Aff Unit
+saveJSBinding name j = do
+  log $ "writing " <> path
+  writeTextFile UTF8 path code
+  where
+    path = Path.concat [ generatedSrcDir, j.antSubmodule <> ".js" ]
+    code = printJSBinding j
+
 
 tableModule :: AntModule
 tableModule =
@@ -306,14 +364,6 @@ tableModule =
     [
     ]
   }
-
-run :: Effect Unit
-run = do
-  log sampleOut
-
-sampleOut :: String
-sampleOut =
-  tableModule # createPSModule # printModule
 
 columnPropsDef :: Array Prop
 columnPropsDef =

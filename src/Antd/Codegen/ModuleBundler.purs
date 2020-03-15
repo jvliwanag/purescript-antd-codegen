@@ -152,7 +152,8 @@ addComponentImports =
 
 build :: String -> (State -> State) -> ModuleBundle
 build name builderF =
-  { psModule:
+  { name
+  , psModule:
     { name: "Antd." <> name
     , exports: finalState.exports
     , importPrelude: finalState.importPrelude

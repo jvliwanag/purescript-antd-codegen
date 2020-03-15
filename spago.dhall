@@ -3,6 +3,7 @@
   [ "console"
   , "effect"
   , "maybe"
+  , "node-fs-aff"
   , "psci-support"
   , "spec"
   , "strings"

@@ -17,6 +17,8 @@ module Antd.Codegen.Types
        , JSBinding
        , JSExport
        , jsExport
+         -- bundle
+       , ModuleBundle
        ) where
 
 import Prelude
@@ -157,3 +159,11 @@ type JSExport
 
 jsExport :: String -> Maybe String -> JSExport
 jsExport name member = { name, member }
+
+--
+
+type ModuleBundle
+  = { name :: String
+    , psModule :: PSModule
+    , jsBinding :: JSBinding
+    }
