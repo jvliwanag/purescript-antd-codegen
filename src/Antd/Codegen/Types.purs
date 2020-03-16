@@ -13,6 +13,10 @@ module Antd.Codegen.Types
        , PSImport
        , PSRecordRow
        , PSDecl(..)
+       , PSTypeDecl(..)
+       , psTypeDecl_
+       , psTypeDecl
+       , psTypeDeclOp
          -- js syntax
        , JSBinding
        , JSExport
@@ -124,7 +128,7 @@ type PSImport = { mod :: String, names :: Array PSDeclName }
 
 type PSRecordRow =
   { name :: String
-  , typ :: String
+  , typeDecl :: PSTypeDecl
   , documentation :: Maybe String
   }
 
@@ -144,6 +148,25 @@ derive instance psDeclGeneric :: Generic PSDecl _
 
 instance psDeclShow :: Show PSDecl where
   show = genericShow
+
+data PSTypeDecl
+  = PSTypeDeclCons { consName :: String, args :: Array PSTypeDecl }
+  | PSTypeDeclOp { symbol :: String, args :: Array PSTypeDecl }
+
+derive instance psTypeDeclEq :: Eq PSTypeDecl
+derive instance psTypeDeclGeneric :: Generic PSTypeDecl _
+
+instance psTypeDeclShow :: Show PSTypeDecl where
+  show d = genericShow d
+
+psTypeDecl_ :: String -> PSTypeDecl
+psTypeDecl_ consName = psTypeDecl consName []
+
+psTypeDecl :: String -> Array PSTypeDecl -> PSTypeDecl
+psTypeDecl consName args = PSTypeDeclCons { consName, args }
+
+psTypeDeclOp :: String -> Array PSTypeDecl -> PSTypeDecl
+psTypeDeclOp symbol args = PSTypeDeclOp { symbol, args }
 
 --
 

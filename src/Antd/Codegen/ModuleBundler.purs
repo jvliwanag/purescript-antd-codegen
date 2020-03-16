@@ -4,7 +4,7 @@ module Antd.Codegen.ModuleBundler
 
 import Prelude
 
-import Antd.Codegen.Types (AntModule, Component, JSExport, ModuleBundle, PSDecl(..), PSDeclName(..), PSRecordRow, Prop, PropTyp, Typ(..))
+import Antd.Codegen.Types (AntModule, Component, JSExport, ModuleBundle, PSDecl(..), PSDeclName(..), PSRecordRow, Prop, PropTyp, Typ(..), psTypeDecl_)
 import Data.Array as Array
 import Data.Foldable (class Foldable, fold, foldl)
 import Data.Map (Map)
@@ -191,7 +191,7 @@ build name builderF =
 propToPSRecordRow :: Prop -> PSRecordRow
 propToPSRecordRow p =
   { name: p.name
-  , typ: printPropTyp p.propTyp
+  , typeDecl: psTypeDecl_ "Foo"--printPropTyp p.propTyp
   , documentation
   }
   where

@@ -3,11 +3,12 @@ module Antd.Codegen.PSPrinter
        , printModuleSection
        , printImportSection
        , printDecl
+       , printTypeDecl
        ) where
 
 import Prelude
 
-import Antd.Codegen.Types (PSDecl(..), PSDeclName(..), PSImport, PSModule)
+import Antd.Codegen.Types (PSDecl(..), PSDeclName(..), PSImport, PSModule, PSTypeDecl(..))
 import Data.Array (fold, mapWithIndex)
 import Data.Array as Array
 import Data.Either (fromRight)
@@ -67,9 +68,9 @@ printDecl (PSDeclTypeRecord { name, rows }) =
     rowsSection =
       Array.intercalate "\n" $ printRow `mapWithIndex` rows
 
-    printRow ndx { name: rowName, typ, documentation } =
+    printRow ndx { name: rowName, typeDecl, documentation } =
       docSection
-      <> delim <> rowName <> " :: " <> typ
+      <> delim <> rowName <> " :: " <> printTypeDecl typeDecl
       where
         docSection = case documentation of
           Just d -> printDocumentation ndx d <> "\n"
@@ -93,6 +94,26 @@ printDecl ( PSDeclForeignRC { funName, foreignComponentName, propsName }) =
   <> "\n"
   <> "\n" <> funName <> " :: forall r. Coercible r " <> propsName <> " => r -> JSX"
   <> "\n" <> funName <> " props = element " <> foreignComponentName <> " (coerce props)"
+
+printTypeDecl :: PSTypeDecl -> String
+printTypeDecl (PSTypeDeclCons { consName, args }) =
+  Array.intercalate " " $
+  Array.cons consName (printTypeDeclArg <$> args)
+
+printTypeDecl (PSTypeDeclOp { symbol, args }) =
+  Array.intercalate (" " <> symbol <> " ") (printTypeDeclArg <$> args)
+
+printTypeDeclArg :: PSTypeDecl -> String
+printTypeDeclArg d =
+  if needsParen
+  then "(" <> p <> ")"
+  else p
+  where
+    p = printTypeDecl d
+
+    needsParen = case d of
+      PSTypeDeclCons { args } -> Array.length args > 0
+      PSTypeDeclOp { args } -> Array.length args > 1
 
 -- Utils
 

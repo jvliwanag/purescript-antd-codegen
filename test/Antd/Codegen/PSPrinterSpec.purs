@@ -4,8 +4,8 @@ module Antd.Codegen.PSPrinterSpec
 
 import Prelude
 
-import Antd.Codegen.PSPrinter (printDecl, printImportSection, printModule, printModuleSection)
-import Antd.Codegen.Types (PSDecl(..), PSDeclName(..), PSRecordRow)
+import Antd.Codegen.PSPrinter (printDecl, printImportSection, printModule, printModuleSection, printTypeDecl)
+import Antd.Codegen.Types (PSDecl(..), PSDeclName(..), PSRecordRow, PSTypeDecl, psTypeDecl, psTypeDeclOp, psTypeDecl_)
 import Data.Maybe (Maybe(..))
 import Data.String (Pattern(..), contains)
 import Test.Spec (Spec, describe, it)
@@ -81,6 +81,26 @@ psPrinterSpec =
             <> "\nimport Baz (class BazClass)"
           )
 
+    describe "type" do
+      it "should print a type with without type args" do
+        printTypeDecl (psTypeDecl_ "String") `shouldEqual` "String"
+
+      it "should print a type with with type args" do
+        printTypeDecl (psTypeDecl "EffectFn1" [ psTypeDecl_ "String", psTypeDecl_ "Unit" ])
+          `shouldEqual` "EffectFn1 String Unit"
+
+      it "should quote type arg with its own type arg" do
+        printTypeDecl (psTypeDecl "Array" [ psTypeDecl "UndefinedOr" [ psTypeDecl_ "String" ] ] )
+          `shouldEqual` "Array (UndefinedOr String)"
+
+      it "should print types separated by a type operator" do
+        printTypeDecl (psTypeDeclOp "|+|" [ psTypeDecl_ "Int", psTypeDecl_ "String", psTypeDecl_ "Boolean" ] )
+          `shouldEqual` "Int |+| String |+| Boolean"
+
+      it "should quote type args using type op" do
+        printTypeDecl (psTypeDecl "Array" [(psTypeDeclOp "|+|" [ psTypeDecl_ "String", psTypeDecl_ "Int" ] )])
+          `shouldEqual` "Array (String |+| Int)"
+
     describe "declarations" do
       it "should print empty record" do
         printDecl (
@@ -99,12 +119,11 @@ psPrinterSpec =
           PSDeclTypeRecord
           { name: "Foo"
           , rows:
-            [ recordRow "prop1" "Int" Nothing
-            , recordRow "prop2" "Int" (Just "line1\nline2\nline3")
-            , recordRow "prop3" "Int" Nothing
-            , recordRow "prop4" "Int" Nothing
-            , recordRow "prop5" "Int" (Just "line1")
-            , recordRow "prop6" "UndefinedOr Int" (Just "line1")
+            [ recordRow "prop1" intTypeDecl Nothing
+            , recordRow "prop2" intTypeDecl (Just "line1\nline2\nline3")
+            , recordRow "prop3" intTypeDecl Nothing
+            , recordRow "prop4" intTypeDecl Nothing
+            , recordRow "prop5" intTypeDecl (Just "line1")
             ]
           }
           ) `shouldEqual`
@@ -118,8 +137,6 @@ psPrinterSpec =
             <> "\n    , prop4 :: Int"
             <> "\n      -- line1"
             <> "\n    , prop5 :: Int"
-            <> "\n      -- line1"
-            <> "\n    , prop6 :: UndefinedOr Int"
             <> "\n    }"
           )
       it "should print record type starting with a row with doc" do
@@ -127,7 +144,7 @@ psPrinterSpec =
           PSDeclTypeRecord
           { name: "Foo"
           , rows:
-            [ recordRow "prop1" "Int" (Just "line")
+            [ recordRow "prop1" intTypeDecl (Just "line")
             ]
           }
           ) `shouldEqual`
@@ -204,9 +221,22 @@ psPrinterSpec =
             [ PSDeclTypeRecord
               { name: "FooProps"
               , rows:
-                [ recordRow "text" "UndefinedOr (String |+| JSX)" Nothing
-                , recordRow "onClick" "UndefinedOr (Effect Unit)" (Just "on click")
-                , recordRow "children" "UndefinedOr (Array JSX)" Nothing
+                [ recordRow "text" (psTypeDecl "UndefinedOr"
+                                    [ psTypeDeclOp "|+|"
+                                      [ psTypeDecl_ "String"
+                                      , psTypeDecl_ "JSX"
+                                      ]
+                                    ]) Nothing
+                , recordRow "onClick" (psTypeDecl "UndefinedOr"
+                                       [ psTypeDecl "Effect"
+                                         [ psTypeDecl_ "Unit"
+                                         ]
+                                       ]) (Just "on click")
+                , recordRow "children" (psTypeDecl "UndefinedOr"
+                                       [ psTypeDecl "Array"
+                                         [ psTypeDecl_ "JSX"
+                                         ]
+                                       ]) Nothing
                 ]
               }
             , PSDeclForeignRC { funName: "foo"
@@ -242,6 +272,9 @@ psPrinterSpec =
             <> "\n"
           )
 
-recordRow :: String -> String -> Maybe String -> PSRecordRow
-recordRow name typ documentation =
-  { name, typ, documentation }
+recordRow :: String -> PSTypeDecl -> Maybe String -> PSRecordRow
+recordRow name typeDecl documentation =
+  { name, typeDecl, documentation }
+
+intTypeDecl :: PSTypeDecl
+intTypeDecl = psTypeDecl_ "Int"
