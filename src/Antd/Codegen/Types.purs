@@ -124,7 +124,7 @@ type PSImport = { mod :: String, names :: Array PSDeclName }
 
 type PSRecordRow =
   { name :: String
-  , propTyp :: PropTyp
+  , typ :: String
   , documentation :: Maybe String
   }
 

@@ -4,8 +4,8 @@ module Antd.Codegen.PSPrinterSpec
 
 import Prelude
 
-import Antd.Codegen.PSPrinter (printDecl, printImportSection, printModule, printModuleSection, printTyp)
-import Antd.Codegen.Types (PSDecl(..), PSDeclName(..), PSRecordRow, Typ(..), optionalPropTyp, requiredPropTyp)
+import Antd.Codegen.PSPrinter (printDecl, printImportSection, printModule, printModuleSection)
+import Antd.Codegen.Types (PSDecl(..), PSDeclName(..), PSRecordRow)
 import Data.Maybe (Maybe(..))
 import Data.String (Pattern(..), contains)
 import Test.Spec (Spec, describe, it)
@@ -81,101 +81,6 @@ psPrinterSpec =
             <> "\nimport Baz (class BazClass)"
           )
 
-    describe "types" do
-      itShouldPrintTyp TypInt "Int"
-      itShouldPrintTyp TypString "String"
-      itShouldPrintTyp TypInt "Int"
-      itShouldPrintTyp TypNumber "Number"
-      itShouldPrintTyp TypBoolean "Boolean"
-      itShouldPrintTyp (TypRef { name: "Foo" }) "Foo"
-      itShouldPrintTyp TypUnknown "Foreign"
-      itShouldPrintTyp (TypStringLit "Foo") "StringLit \"Foo\""
-      itShouldPrintTyp (TypBooleanLit true) "BooleanLit \"true\""
-      itShouldPrintTyp (TypBooleanLit false) "BooleanLit \"false\""
-      itShouldPrintTyp TypNode "JSX"
-      itShouldPrintTyp TypUnit "Unit"
-
-      -- oneof
-      itShouldPrintTyp (TypOneOf [TypInt, TypString, TypNode]) $
-        "Int |+| String |+| JSX"
-
-      -- array
-      itShouldPrintTyp (TypArray TypInt) $
-        "Array Int"
-      itShouldPrintTyp (TypArray (TypOneOf [TypInt, TypString])) $
-        "Array (Int |+| String)"
-
-      -- todo allow input as undefinedor
-      -- fn
-      itShouldPrintTyp (TypFn { effectful: false
-                              , input: []
-                              , output: requiredPropTyp TypInt
-                              }) $
-        "Unit -> Int"
-
-      itShouldPrintTyp (TypFn { effectful: false
-                              , input: [ requiredPropTyp TypString
-                                       ]
-                              , output: requiredPropTyp TypInt
-                              }) $
-        "String -> Int"
-
-      itShouldPrintTyp (TypFn { effectful: false
-                              , input: [ requiredPropTyp TypString
-                                       , requiredPropTyp TypBoolean
-                                       ]
-                              , output: requiredPropTyp (TypArray TypInt)
-                              }) $
-        "Fn2 String Boolean (Array Int)"
-
-      itShouldPrintTyp (TypFn { effectful: true
-                              , input: []
-                              , output: requiredPropTyp TypInt
-                              }) $
-        "Effect Int"
-
-      itShouldPrintTyp (TypFn { effectful: true
-                              , input: [ requiredPropTyp TypString
-                                       ]
-                              , output: requiredPropTyp TypInt
-                              }) $
-        "EffectFn1 String Int"
-
-      itShouldPrintTyp (TypFn { effectful: true
-                              , input: [ requiredPropTyp TypString
-                                       , requiredPropTyp TypBoolean
-                                       ]
-                              , output: requiredPropTyp (TypArray TypInt)
-                              }) $
-        "EffectFn2 String Boolean (Array Int)"
-
-      -- optional in fn
-      itShouldPrintTyp (TypFn { effectful: false
-                              , input: [ optionalPropTyp TypString
-                                       , requiredPropTyp TypBoolean
-                                       ]
-                              , output: optionalPropTyp (TypArray TypInt)
-                              }) $
-        "Fn2 (UndefinedOr String) Boolean (UndefinedOr (Array Int))"
-
-      -- record
-      itShouldPrintTyp (TypRecord []) "{}"
-
-      itShouldPrintTyp
-        ( TypRecord
-          [ { key: "foo", propTyp: optionalPropTyp TypString }
-          , { key: "bar", propTyp: requiredPropTyp TypBoolean }
-          , { key: "baz"
-            , propTyp: optionalPropTyp (TypOneOf [ TypString
-                                                 , TypBoolean
-                                                 ]
-                                       )
-            }
-          ]
-        ) $
-        "{ foo :: UndefinedOr String, bar :: Boolean, baz :: UndefinedOr (String |+| Boolean) }"
-
-
     describe "declarations" do
       it "should print empty record" do
         printDecl (
@@ -194,12 +99,12 @@ psPrinterSpec =
           PSDeclTypeRecord
           { name: "Foo"
           , rows:
-            [ recordRow "prop1" true TypInt Nothing
-            , recordRow "prop2" true TypInt (Just "line1\nline2\nline3")
-            , recordRow "prop3" true TypInt Nothing
-            , recordRow "prop4" true TypInt Nothing
-            , recordRow "prop5" true TypInt (Just "line1")
-            , recordRow "prop6" false TypInt (Just "line1")
+            [ recordRow "prop1" "Int" Nothing
+            , recordRow "prop2" "Int" (Just "line1\nline2\nline3")
+            , recordRow "prop3" "Int" Nothing
+            , recordRow "prop4" "Int" Nothing
+            , recordRow "prop5" "Int" (Just "line1")
+            , recordRow "prop6" "UndefinedOr Int" (Just "line1")
             ]
           }
           ) `shouldEqual`
@@ -222,7 +127,7 @@ psPrinterSpec =
           PSDeclTypeRecord
           { name: "Foo"
           , rows:
-            [ recordRow "prop1" true TypInt (Just "line")
+            [ recordRow "prop1" "Int" (Just "line")
             ]
           }
           ) `shouldEqual`
@@ -299,13 +204,9 @@ psPrinterSpec =
             [ PSDeclTypeRecord
               { name: "FooProps"
               , rows:
-                [ recordRow "text" false (TypOneOf [TypString, TypNode]) Nothing
-                , recordRow "onClick" false (TypFn { effectful: true
-                                                   , input: []
-                                                   , output: requiredPropTyp TypUnit
-                                                   }
-                                            ) (Just "on click")
-                , recordRow "children" false (TypArray TypNode) Nothing
+                [ recordRow "text" "UndefinedOr (String |+| JSX)" Nothing
+                , recordRow "onClick" "UndefinedOr (Effect Unit)" (Just "on click")
+                , recordRow "children" "UndefinedOr (Array JSX)" Nothing
                 ]
               }
             , PSDeclForeignRC { funName: "foo"
@@ -341,11 +242,6 @@ psPrinterSpec =
             <> "\n"
           )
 
-recordRow :: String -> Boolean -> Typ -> Maybe String -> PSRecordRow
-recordRow name required typ documentation =
-  { name, propTyp: { required,  typ } , documentation }
-
-itShouldPrintTyp :: Typ -> String -> Spec Unit
-itShouldPrintTyp typ expected = do
-  it ("should print typ " <> show typ) do
-    printTyp typ `shouldEqual` expected
+recordRow :: String -> String -> Maybe String -> PSRecordRow
+recordRow name typ documentation =
+  { name, typ, documentation }

@@ -6,12 +6,13 @@ import Prelude
 
 import Antd.Codegen.Types (AntModule, Component, JSExport, ModuleBundle, PSDecl(..), PSDeclName(..), PSRecordRow, Prop, PropTyp, Typ(..))
 import Data.Array as Array
-import Data.Foldable (class Foldable, foldl)
+import Data.Foldable (class Foldable, fold, foldl)
 import Data.Map (Map)
 import Data.Map as Map
 import Data.Maybe (Maybe(..))
 import Data.Set (Set)
 import Data.Set as Set
+import Data.String (Pattern(..))
 import Data.String as String
 import Data.Tuple (uncurry)
 
@@ -79,7 +80,6 @@ addImportsForPropTyp { required, typ } =
   then addImportType "Untagged.Union" "UndefinedOr" false
   else identity
 
--- TODO add others after writing tests
 addImportsForTyp :: Typ -> State -> State
 addImportsForTyp TypString = addImportPrelude
 addImportsForTyp TypInt = addImportPrelude
@@ -191,7 +191,7 @@ build name builderF =
 propToPSRecordRow :: Prop -> PSRecordRow
 propToPSRecordRow p =
   { name: p.name
-  , propTyp: p.propTyp
+  , typ: printPropTyp p.propTyp
   , documentation
   }
   where
@@ -231,3 +231,72 @@ decapitalize :: String -> String
 decapitalize s = case String.uncons s of
   Just { head, tail } -> String.toLower (String.singleton head) <> tail
   Nothing -> s
+
+
+printPropTyp :: PropTyp -> String
+printPropTyp { typ, required } =
+  if required
+  then printTyp typ
+  else printTypCons "UndefinedOr" [typ]
+
+printTyp :: Typ -> String
+printTyp TypInt = "Int"
+printTyp TypString = "String"
+printTyp TypNumber = "Number"
+printTyp TypBoolean = "Boolean"
+printTyp (TypRef { name }) = name
+printTyp TypUnknown = "Foreign"
+printTyp (TypStringLit str) = "StringLit \"" <> str <> "\""
+printTyp (TypBooleanLit bool) = "BooleanLit \"" <> show bool <> "\""
+printTyp TypNode = "JSX"
+printTyp TypUnit = "Unit"
+printTyp (TypOneOf ts) =
+  Array.intercalate " |+| " $ printTyp <$> ts
+printTyp (TypArray t) =
+  printTypCons "Array" [t]
+printTyp (TypFn { effectful, input, output }) =
+  case effectful, input of
+    false, [] -> "Unit -> " <> printPropTyp output
+    false, [i0] -> printPropTyp i0 <> " -> " <> printPropTyp output
+    false, is -> printUncurriedFn "Fn"
+    true, [] -> printPropTypCons "Effect" [output]
+    true, is -> printUncurriedFn "EffectFn"
+
+  where
+    printUncurriedFn consPrefix =
+      printPropTypCons
+        (consPrefix <> (show (Array.length input)))
+        (Array.snoc input output)
+
+printTyp (TypRecord []) = "{}"
+printTyp (TypRecord es) =
+  "{ " <> entriesSection <> " }"
+  where
+    entriesSection =
+      Array.intercalate ", "
+      $ printEntrySection <$> es
+
+    printEntrySection { key, propTyp } =
+      key <> " :: " <> printPropTyp propTyp
+
+printPropTypCons :: String -> Array PropTyp -> String
+printPropTypCons cons args =
+  printCons cons $ printPropTyp <$> args
+
+printTypCons :: String -> Array Typ -> String
+printTypCons cons args =
+  printCons cons $ printTyp <$> args
+
+-- typ
+
+printCons :: String -> Array String -> String
+printCons cons args =
+  cons <> argsSection
+  where
+    argsSection = fold $ (\a -> " " <> printArg a) <$> args
+
+printArg :: String -> String
+printArg arg =
+  if String.contains (Pattern " ") arg
+  then "(" <> arg <> ")"
+  else arg
