@@ -5,7 +5,7 @@ module Antd.Codegen.ModuleBundlerSpec
 import Prelude
 
 import Antd.Codegen.ModuleBundler (createModuleBundle)
-import Antd.Codegen.Types (PSDecl(..), PSDeclName(..), PSImport, PSModule, Prop, PropTyp, Typ(..), ModuleBundle, optionalPropTyp, prop, requiredPropTyp)
+import Antd.Codegen.Types (ModuleBundle, PSDecl(..), PSDeclName(..), PSModule, PSTypeDecl, Prop, PropTyp, Typ(..), optionalPropTyp, prop, psTypeDecl, psTypeDeclOp, psTypeDecl_, requiredPropTyp)
 import Data.Array as Array
 import Data.Foldable (traverse_)
 import Data.Maybe (Maybe(..), isJust, isNothing)
@@ -66,34 +66,36 @@ moduleBundlerSpec =
       ]
 
     it "should import foreign" do
-      (moduleWithRequiredTyp TypUnknown).imports
+      (moduleWithRequiredTyp TypUnknown)
         `shouldContainImport`
         (importType "Foreign" "Foreign")
 
     it "should import StringLit" do
-      (moduleWithRequiredTyp (TypStringLit "foo")).imports
+      (moduleWithRequiredTyp (TypStringLit "foo"))
         `shouldContainImport`
         (importType "Literals" "StringLit")
 
     it "should import BooleanLit" do
-      (moduleWithRequiredTyp (TypBooleanLit true)).imports
+      (moduleWithRequiredTyp (TypBooleanLit true))
         `shouldContainImport`
         (importType "Literals" "BooleanLit")
 
-    it "should import JSX" do
-      (moduleWithRequiredTyp TypNode).imports
-        `shouldContainImport`
-        (importType "React.Basic" "JSX")
+    it "should support JSX" do
+      let mod = moduleWithRequiredTyp TypNode
+      mod `shouldContainImport` (importType "React.Basic" "JSX")
+      mod `shouldHaveProp` (psTypeDecl_ "JSX")
 
-    it "should import |+| and inner type for oneof" do
+    it "should support |+| and inner types for oneof" do
       let mod = moduleWithRequiredTyp (TypOneOf [ TypNode, TypInt ])
-      mod.imports `shouldContainImport` (importType "Untagged.Union" "|+|")
+      mod `shouldContainImport` (importType "Untagged.Union" "|+|")
 
       -- for node
-      mod.imports `shouldContainImport` (importType "React.Basic" "JSX")
+      mod `shouldContainImport` (importType "React.Basic" "JSX")
 
       -- for Int
       mod.importPrelude `shouldEqual` true
+
+      mod `shouldHaveProp` (psTypeDeclOp "|+|" [psTypeDecl_ "JSX", psTypeDecl_ "Int"])
 
     it "should import FnX and inner type for non effectful function" do
       let mod = moduleWithRequiredTyp (TypFn { effectful: false
@@ -103,16 +105,22 @@ moduleBundlerSpec =
                                                       ]
                                              , output: requiredPropTyp TypNode
                                              })
-      mod.imports `shouldContainImport` (importType "Data.Function.Uncurried" "Fn3")
+      mod `shouldContainImport` (importType "Data.Function.Uncurried" "Fn3")
 
       -- for inputs
       mod.importPrelude `shouldEqual` true
-      mod.imports `shouldContainImport` (importType "Foreign" "Foreign")
+      mod `shouldContainImport` (importType "Foreign" "Foreign")
 
       -- for output
-      mod.imports `shouldContainImport` (importType "React.Basic" "JSX")
+      mod `shouldContainImport` (importType "React.Basic" "JSX")
 
-    it "should import EffectFnX and inner type for effectful function" do
+      mod `shouldHaveProp` (psTypeDecl "Fn3" [ psTypeDecl_ "Int"
+                                             , psTypeDecl_ "String"
+                                             , psTypeDecl_ "Foreign"
+                                             , psTypeDecl_ "JSX"
+                                             ])
+
+    it "should support EffectFnX for effectful function" do
       let mod = moduleWithRequiredTyp (TypFn { effectful: true
                                              , input: [ requiredPropTyp TypInt
                                                       , requiredPropTyp TypString
@@ -120,30 +128,39 @@ moduleBundlerSpec =
                                                       ]
                                              , output: requiredPropTyp TypNode
                                              })
-      mod.imports `shouldContainImport` (importType "Effect.Uncurried" "EffectFn3")
+      mod `shouldContainImport` (importType "Effect.Uncurried" "EffectFn3")
 
-    it "should not import uncurried for non effectful function with lt 2 arguments" do
+      mod `shouldHaveProp` (psTypeDecl "EffectFn3" [ psTypeDecl_ "Int"
+                                                   , psTypeDecl_ "String"
+                                                   , psTypeDecl_ "Foreign"
+                                                   , psTypeDecl_ "JSX"
+                                                   ])
+
+    it "should use normal (->) for non effectful function with lt 2 arguments" do
       let mod = moduleWithRequiredTyp (TypFn { effectful: false
                                              , input: [ requiredPropTyp TypInt ]
                                              , output: requiredPropTyp TypNode
                                              })
       (mod.imports # Array.find (\i -> i.mod == "Data.Function.Uncurried")) `shouldSatisfy` isNothing
 
-    it "should not import preldue for non effectful function with no arguments" do
+      mod `shouldHaveProp` (psTypeDeclOp "->" [ psTypeDecl_ "Int", psTypeDecl_ "JSX" ])
+
+    it "should add a unit input for nont effectful function with no arguments" do
       let mod = moduleWithRequiredTyp (TypFn { effectful: false
                                              , input: []
                                              , output: requiredPropTyp TypNode
                                              })
       mod.importPrelude `shouldEqual` true
+      mod `shouldHaveProp` (psTypeDeclOp "->" [ psTypeDecl_ "Unit", psTypeDecl_ "JSX" ])
 
 
-    it "should import Effect for effectful function no args" do
+    it "should use Effect for effectful function no args" do
       let mod = moduleWithRequiredTyp (TypFn { effectful: true
                                              , input: []
                                              , output: requiredPropTyp TypNode
                                              })
-      mod.imports `shouldContainImport` (importType "Effect" "Effect")
-
+      mod `shouldContainImport` (importType "Effect" "Effect")
+      mod `shouldHaveProp` (psTypeDecl "Effect" [ psTypeDecl_ "JSX" ])
 
     it "should import types required for record fields" do
       let mod = moduleWithRequiredTyp
@@ -152,14 +169,18 @@ moduleBundlerSpec =
                             }])
       mod.importPrelude `shouldEqual` true
 
-    it "should import types required for array values" do
-      (moduleWithRequiredTyp (TypArray TypInt)).importPrelude
-        `shouldEqual` true
-
-    it "should import UndefinedOr and inner type for optional props" do
-      let mod = moduleWithPropTyp (optionalPropTyp TypInt)
-      mod.imports `shouldContainImport` (importType "Untagged.Union" "UndefinedOr")
+    it "should import types required for array values and have an array prop" do
+      let mod = moduleWithRequiredTyp (TypArray TypInt)
       mod.importPrelude `shouldEqual` true
+
+      mod `shouldHaveProp` (psTypeDecl "Array" [ psTypeDecl_ "Int" ])
+
+    it "should use UndefinedOr and inner type for optional props" do
+      let mod = moduleWithPropTyp (optionalPropTyp TypInt)
+      mod `shouldContainImport` (importType "Untagged.Union" "UndefinedOr")
+      mod.importPrelude `shouldEqual` true
+
+      mod `shouldHaveProp` (psTypeDecl "UndefinedOr" [ psTypeDecl_ "Int" ])
 
     it "should include subComponents" do
       ( createModuleBundle
@@ -220,14 +241,22 @@ createFooModuleBundle primaryProps =
 importType :: String -> String -> { mod :: String, name :: PSDeclName }
 importType mod name = { mod, name: (PSDeclNameType { name, includeConstructors: false }) }
 
-shouldContainImport :: Array PSImport -> { mod :: String, name :: PSDeclName } -> Aff Unit
-shouldContainImport imports { mod, name } = do
+shouldContainImport :: PSModule -> { mod :: String, name :: PSDeclName } -> Aff Unit
+shouldContainImport { imports } { mod, name } = do
   containsImport `shouldEqual` true
 
   where
     containsImport :: Boolean
     containsImport =
       isJust $ Array.find (\i -> i.mod == mod && Array.elem name i.names) imports
+
+shouldHaveProp :: PSModule -> PSTypeDecl -> Aff Unit
+shouldHaveProp { declarations } typeDecl =
+  rowTypeDecl `shouldContain` typeDecl
+  where
+    rowTypeDecl = declarations # Array.findMap case _ of
+      PSDeclTypeRecord { rows: [f] } -> Just f.typeDecl
+      _ -> Nothing
 
 itShouldImportPreludeForTyp :: Typ -> Spec Unit
 itShouldImportPreludeForTyp typ =
