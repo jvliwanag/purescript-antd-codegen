@@ -17,6 +17,7 @@ module Antd.Codegen.Types
        , psTypeDecl_
        , psTypeDecl
        , psTypeDeclOp
+       , psTypeDeclRecord
          -- js syntax
        , JSBinding
        , JSExport
@@ -152,6 +153,7 @@ instance psDeclShow :: Show PSDecl where
 data PSTypeDecl
   = PSTypeDeclCons { consName :: String, args :: Array PSTypeDecl }
   | PSTypeDeclOp { symbol :: String, args :: Array PSTypeDecl }
+  | PSTypeDeclRecord { fields :: Array { name :: String, typeDecl :: PSTypeDecl } }
 
 derive instance psTypeDeclEq :: Eq PSTypeDecl
 derive instance psTypeDeclGeneric :: Generic PSTypeDecl _
@@ -167,6 +169,9 @@ psTypeDecl consName args = PSTypeDeclCons { consName, args }
 
 psTypeDeclOp :: String -> Array PSTypeDecl -> PSTypeDecl
 psTypeDeclOp symbol args = PSTypeDeclOp { symbol, args }
+
+psTypeDeclRecord :: Array { name :: String, typeDecl :: PSTypeDecl } -> PSTypeDecl
+psTypeDeclRecord fields = PSTypeDeclRecord { fields }
 
 --
 

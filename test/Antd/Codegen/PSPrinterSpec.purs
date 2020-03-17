@@ -5,7 +5,7 @@ module Antd.Codegen.PSPrinterSpec
 import Prelude
 
 import Antd.Codegen.PSPrinter (printDecl, printImportSection, printModule, printModuleSection, printTypeDecl)
-import Antd.Codegen.Types (PSDecl(..), PSDeclName(..), PSRecordRow, PSTypeDecl, psTypeDecl, psTypeDeclOp, psTypeDecl_)
+import Antd.Codegen.Types (PSDecl(..), PSDeclName(..), PSRecordRow, PSTypeDecl, psTypeDecl, psTypeDeclOp, psTypeDeclRecord, psTypeDecl_)
 import Data.Maybe (Maybe(..))
 import Data.String (Pattern(..), contains)
 import Test.Spec (Spec, describe, it)
@@ -100,6 +100,24 @@ psPrinterSpec =
       it "should quote type args using type op" do
         printTypeDecl (psTypeDecl "Array" [(psTypeDeclOp "|+|" [ psTypeDecl_ "String", psTypeDecl_ "Int" ] )])
           `shouldEqual` "Array (String |+| Int)"
+
+      it "should print record type decl" do
+        printTypeDecl (psTypeDeclRecord
+                       [ { name: "foo", typeDecl: psTypeDecl_ "String"}
+                       , { name: "bar"
+                         , typeDecl: psTypeDecl "Array"
+                           [ psTypeDecl_ "String"
+                           ]
+                         }
+                       , { name: "baz"
+                         , typeDecl: psTypeDecl "Array"
+                           [ psTypeDecl "UndefinedOr"
+                             [ psTypeDecl_ "Int"
+                             ]
+                           ]
+                         }
+                       ])
+          `shouldEqual` "{foo :: String, bar :: Array String, baz :: Array (UndefinedOr Int)}"
 
     describe "declarations" do
       it "should print empty record" do

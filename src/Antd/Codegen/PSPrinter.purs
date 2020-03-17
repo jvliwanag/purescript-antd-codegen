@@ -103,6 +103,11 @@ printTypeDecl (PSTypeDeclCons { consName, args }) =
 printTypeDecl (PSTypeDeclOp { symbol, args }) =
   Array.intercalate (" " <> symbol <> " ") (printTypeDeclArg <$> args)
 
+printTypeDecl (PSTypeDeclRecord { fields }) =
+  "{" <> Array.intercalate ", " (printRow <$> fields) <> "}"
+  where
+    printRow { name, typeDecl } = name <> " :: " <> printTypeDecl typeDecl
+
 printTypeDeclArg :: PSTypeDecl -> String
 printTypeDeclArg d =
   if needsParen
@@ -114,6 +119,7 @@ printTypeDeclArg d =
     needsParen = case d of
       PSTypeDeclCons { args } -> Array.length args > 0
       PSTypeDeclOp { args } -> Array.length args > 1
+      PSTypeDeclRecord _ -> false
 
 -- Utils
 
