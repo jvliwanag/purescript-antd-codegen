@@ -16,8 +16,13 @@ module Antd.Codegen.Types
        , PSTypeDecl(..)
        , psTypeDecl_
        , psTypeDecl
+       , psTypeDecl'
        , psTypeDeclOp
+       , psTypeDeclOp'
        , psTypeDeclRecord
+       , PSTypeArg(..)
+       , psTypeArg
+       , psTypeArgSymbol
          -- js syntax
        , JSBinding
        , JSExport
@@ -151,8 +156,8 @@ instance psDeclShow :: Show PSDecl where
   show = genericShow
 
 data PSTypeDecl
-  = PSTypeDeclCons { consName :: String, args :: Array PSTypeDecl }
-  | PSTypeDeclOp { symbol :: String, args :: Array PSTypeDecl }
+  = PSTypeDeclCons { consName :: String, args :: Array PSTypeArg }
+  | PSTypeDeclOp { symbol :: String, args :: Array PSTypeArg }
   | PSTypeDeclRecord { fields :: Array { name :: String, typeDecl :: PSTypeDecl } }
 
 derive instance psTypeDeclEq :: Eq PSTypeDecl
@@ -165,13 +170,36 @@ psTypeDecl_ :: String -> PSTypeDecl
 psTypeDecl_ consName = psTypeDecl consName []
 
 psTypeDecl :: String -> Array PSTypeDecl -> PSTypeDecl
-psTypeDecl consName args = PSTypeDeclCons { consName, args }
+psTypeDecl consName = psTypeDecl' consName <<< map psTypeArg
+
+psTypeDecl' :: String -> Array PSTypeArg -> PSTypeDecl
+psTypeDecl' consName args = PSTypeDeclCons { consName, args }
 
 psTypeDeclOp :: String -> Array PSTypeDecl -> PSTypeDecl
-psTypeDeclOp symbol args = PSTypeDeclOp { symbol, args }
+psTypeDeclOp symbol = psTypeDeclOp' symbol <<< map psTypeArg
+
+psTypeDeclOp' :: String -> Array PSTypeArg -> PSTypeDecl
+psTypeDeclOp' symbol args = PSTypeDeclOp { symbol, args }
+
 
 psTypeDeclRecord :: Array { name :: String, typeDecl :: PSTypeDecl } -> PSTypeDecl
 psTypeDeclRecord fields = PSTypeDeclRecord { fields }
+
+data PSTypeArg
+  = PSTypeArgDecl PSTypeDecl
+  | PSTypeArgSymbol String
+
+derive instance psTypeArgEq :: Eq PSTypeArg
+derive instance psTypeArgGeneric :: Generic PSTypeArg _
+
+instance psTypeArgShow :: Show PSTypeArg where
+  show = genericShow
+
+psTypeArg :: PSTypeDecl -> PSTypeArg
+psTypeArg = PSTypeArgDecl
+
+psTypeArgSymbol :: String -> PSTypeArg
+psTypeArgSymbol = PSTypeArgSymbol
 
 --
 

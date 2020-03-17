@@ -8,7 +8,7 @@ module Antd.Codegen.PSPrinter
 
 import Prelude
 
-import Antd.Codegen.Types (PSDecl(..), PSDeclName(..), PSImport, PSModule, PSTypeDecl(..))
+import Antd.Codegen.Types (PSDecl(..), PSDeclName(..), PSImport, PSModule, PSTypeArg(..), PSTypeDecl(..))
 import Data.Array (fold, mapWithIndex)
 import Data.Array as Array
 import Data.Either (fromRight)
@@ -98,18 +98,18 @@ printDecl ( PSDeclForeignRC { funName, foreignComponentName, propsName }) =
 printTypeDecl :: PSTypeDecl -> String
 printTypeDecl (PSTypeDeclCons { consName, args }) =
   Array.intercalate " " $
-  Array.cons consName (printTypeDeclArg <$> args)
+  Array.cons consName (printTypeArg <$> args)
 
 printTypeDecl (PSTypeDeclOp { symbol, args }) =
-  Array.intercalate (" " <> symbol <> " ") (printTypeDeclArg <$> args)
+  Array.intercalate (" " <> symbol <> " ") (printTypeArg <$> args)
 
 printTypeDecl (PSTypeDeclRecord { fields }) =
   "{" <> Array.intercalate ", " (printRow <$> fields) <> "}"
   where
     printRow { name, typeDecl } = name <> " :: " <> printTypeDecl typeDecl
 
-printTypeDeclArg :: PSTypeDecl -> String
-printTypeDeclArg d =
+printTypeArg :: PSTypeArg -> String
+printTypeArg (PSTypeArgDecl d) =
   if needsParen
   then "(" <> p <> ")"
   else p
@@ -120,6 +120,8 @@ printTypeDeclArg d =
       PSTypeDeclCons { args } -> Array.length args > 0
       PSTypeDeclOp { args } -> Array.length args > 1
       PSTypeDeclRecord _ -> false
+printTypeArg (PSTypeArgSymbol s) =
+  "\"" <> s <> "\""
 
 -- Utils
 
