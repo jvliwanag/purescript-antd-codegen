@@ -4,25 +4,26 @@ module Antd.Codegen.ModuleBundler
 
 import Prelude
 
-import Antd.Codegen.Types (AntModule, Component, JSExport, ModuleBundle, PSDecl(..), PSDeclName(..), PSRecordRow, Prop, PropTyp, Typ(..), psTypeDecl_)
+import Antd.Codegen.Types (AntModule, Component, JSExport, ModuleBundle, PSDecl(..), PSDeclName(..), PSRecordRow, PSTypeDecl, Prop, PropTyp, Typ(..), psTypeArgSymbol, psTypeDecl, psTypeDecl', psTypeDeclOp, psTypeDeclRecord, psTypeDecl_)
+import Control.Monad.State (State, execState, modify_)
 import Data.Array as Array
-import Data.Foldable (class Foldable, fold, foldl)
+import Data.Foldable (traverse_)
 import Data.Map (Map)
 import Data.Map as Map
 import Data.Maybe (Maybe(..))
 import Data.Set (Set)
 import Data.Set as Set
-import Data.String (Pattern(..))
 import Data.String as String
+import Data.Traversable (traverse)
 import Data.Tuple (uncurry)
 
 createModuleBundle :: AntModule -> ModuleBundle
 createModuleBundle am =
   build am.primaryComponent.name
   $ addComponent true am.primaryComponent
-  >>> traverseStateBuilders (addComponent false) am.subComponents
+  *> traverse_ (addComponent false) am.subComponents
 
-type State =
+type BuilderState =
   { importPrelude :: Boolean
   , exports :: Array PSDeclName
   , imports :: Map String (Set PSDeclName)
@@ -30,111 +31,133 @@ type State =
   , jsExports :: Array JSExport
   }
 
-addImportPrelude :: State -> State
-addImportPrelude = _ { importPrelude = true }
+type Builder a = State BuilderState a
 
-addImportType :: String -> String -> Boolean -> State -> State
+addImportPrelude :: Builder Unit
+addImportPrelude = modify_ _ { importPrelude = true }
+
+addImportType :: String -> String -> Boolean -> Builder Unit
 addImportType mod name includeConstructors =
   addImport mod $ PSDeclNameType { name, includeConstructors }
 
-addImportFun :: String -> String -> State -> State
+addImportFun :: String -> String -> Builder Unit
 addImportFun mod name =
   addImport mod $ PSDeclNameFun name
 
-addImportClass :: String -> String -> State -> State
+addImportClass :: String -> String -> Builder Unit
 addImportClass mod name =
   addImport mod $ PSDeclNameClass name
 
-addImport :: String -> PSDeclName -> State -> State
-addImport mod name prev =
-  prev { imports = newImports
-       }
+addImport :: String -> PSDeclName -> Builder Unit
+addImport mod name =
+  modify_ \p -> p { imports = newImports p
+                        }
   where
-    newImports = Map.alter (Just <<< updateModEntry) mod prev.imports
+    newImports p = Map.alter (Just <<< updateModEntry) mod p.imports
 
     updateModEntry Nothing = Set.singleton name
     updateModEntry (Just p) = Set.insert name p
 
-addExportType :: String -> Boolean -> State -> State
+addExportType :: String -> Boolean -> Builder Unit
 addExportType name includeConstructors =
   addExport $ PSDeclNameType { name, includeConstructors }
 
-addExportFun :: String -> State -> State
+addExportFun :: String -> Builder Unit
 addExportFun name =
   addExport $ PSDeclNameFun name
 
-addExport :: PSDeclName -> State -> State
-addExport name prev =
-  prev { exports = Array.snoc prev.exports name
-       }
+addExport :: PSDeclName -> Builder Unit
+addExport name =
+  modify_ \p -> p { exports = Array.snoc p.exports name
+                  }
 
-addJSExport :: JSExport -> State -> State
-addJSExport b prev =
-  prev { jsExports = Array.snoc prev.jsExports b
-       }
+addJSExport :: JSExport -> Builder Unit
+addJSExport b =
+  modify_ \p ->p { jsExports = Array.snoc p.jsExports b
+                 }
 
-addImportsForPropTyp :: PropTyp -> State -> State
-addImportsForPropTyp { required, typ } =
-  addImportsForTyp typ >>>
+usePropTypeDecl :: PropTyp -> Builder PSTypeDecl
+usePropTypeDecl { required, typ } = do
+  d <- useTypeDecl typ
   if not required
-  then addImportType "Untagged.Union" "UndefinedOr" false
-  else identity
+    then addImportType "Untagged.Union" "UndefinedOr" false $> psTypeDecl "UndefinedOr" [d]
+    else pure d
 
-addImportsForTyp :: Typ -> State -> State
-addImportsForTyp TypString = addImportPrelude
-addImportsForTyp TypInt = addImportPrelude
-addImportsForTyp TypNumber = addImportPrelude
-addImportsForTyp TypBoolean = addImportPrelude
-addImportsForTyp TypUnit = addImportPrelude
-addImportsForTyp TypUnknown = addImportType "Foreign" "Foreign" false
-addImportsForTyp (TypStringLit _) = addImportType "Literals" "StringLit" false
-addImportsForTyp (TypBooleanLit _) = addImportType "Literals" "BooleanLit" false
-addImportsForTyp TypNode = addImportType "React.Basic" "JSX" false
-addImportsForTyp (TypOneOf options) =
-  addImportType "Untagged.Union" "|+|" false >>>
-  traverseStateBuilders addImportsForTyp options
-addImportsForTyp (TypFn { effectful, input, output }) =
-  addImportsForPropTyp output >>>
-  traverseStateBuilders addImportsForPropTyp input >>>
-  importUncurried
+useTypeDecl :: Typ -> Builder PSTypeDecl
+useTypeDecl TypString = addImportPrelude $> psTypeDecl_ "String"
+useTypeDecl TypInt = addImportPrelude $> psTypeDecl_ "Int"
+useTypeDecl TypNumber = addImportPrelude $> psTypeDecl_ "Number"
+useTypeDecl TypBoolean = addImportPrelude $> psTypeDecl_ "Boolean"
+useTypeDecl TypUnit = addImportPrelude $> psTypeDecl_ "Unit"
+useTypeDecl TypUnknown = addImportType "Foreign" "Foreign" false $> psTypeDecl_ "Foreign"
+useTypeDecl (TypStringLit s) =
+  addImportType "Literals" "StringLit" false
+  $> (psTypeDecl' "StringLit" [psTypeArgSymbol s])
+useTypeDecl (TypBooleanLit b) =
+  addImportType "Literals" "BooleanLit" false
+  $> (psTypeDecl' "BooleanLit" [psTypeArgSymbol $ show b])
+useTypeDecl TypNode =
+  addImportType "React.Basic" "JSX" false
+  $> psTypeDecl_ "JSX"
+useTypeDecl (TypOneOf options) = do
+  addImportType "Untagged.Union" "|+|" false
+  psTypeDeclOp "|+|" <$> traverse useTypeDecl options
+useTypeDecl (TypFn { effectful, input, output }) = do
+  fn <- importUncurried
+  outArg <- usePropTypeDecl output
+  inArgs <- traverse usePropTypeDecl input
+  pure $ fn $ Array.snoc inArgs outArg
+
   where
+    importUncurried :: Builder (Array PSTypeDecl -> PSTypeDecl)
     importUncurried = case effectful, input of
-      false, [] -> addImportPrelude -- for Unit input
-      false, [i0] -> identity
-      false, is -> addImportType "Data.Function.Uncurried" ("Fn" <> show (Array.length is)) false
-      true, [] -> addImportType "Effect" "Effect" false
-      true, is -> addImportType "Effect.Uncurried" ("EffectFn" <> show (Array.length is)) false
-addImportsForTyp (TypRecord fields) =
-  traverseStateBuilders (addImportsForPropTyp <<< _.propTyp) fields
-addImportsForTyp (TypArray a) =
-  addImportsForTyp a
+      false, [] -> addImportPrelude $> (Array.cons (psTypeDecl_ "Unit") >>> psTypeDeclOp "->")
+      false, [i0] -> pure $ psTypeDeclOp "->"
+      false, is ->
+        let fnName = ("Fn" <> show (Array.length is))
+        in addImportType "Data.Function.Uncurried" fnName false $> psTypeDecl fnName
+      true, [] ->
+        addImportType "Effect" "Effect" false $> psTypeDecl "Effect"
+      true, is ->
+        let fnName = ("EffectFn" <> show (Array.length is))
+        in addImportType "Effect.Uncurried" fnName false $> psTypeDecl fnName
+useTypeDecl (TypRecord fields) =
+  psTypeDeclRecord <$> traverse addRow fields
+  where
+    addRow { key, propTyp } =
+      usePropTypeDecl propTyp <#> { name: key, typeDecl: _ }
+useTypeDecl (TypArray a) = do
+  decl <- useTypeDecl a
+  pure $ psTypeDecl "Array" [decl]
 -- we currently assume that refs defined here are within the module
 -- please add a test when this assumption no longer holds ;)
-addImportsForTyp (TypRef _) = identity
+useTypeDecl (TypRef { name }) = pure $ psTypeDecl_ name
 
-addDecls :: Array PSDecl -> State -> State
-addDecls decls prev = prev { declarations = prev.declarations <> decls }
+addDecls :: Array PSDecl -> Builder Unit
+addDecls decls = modify_ \p -> p { declarations = p.declarations <> decls }
 
-addComponent :: Boolean -> Component -> State -> State
-addComponent isPrimary { name, props } =
+addComponent :: Boolean -> Component -> Builder Unit
+addComponent isPrimary { name, props } = do
   addComponentImports
-  >>> importPropTyps
-  >>> addExport ( PSDeclNameType { name: pcn.propsName
-                                 , includeConstructors: false
-                                 }
-                )
-  >>> addExport (PSDeclNameFun pcn.funName)
-  >>> addDecls
-  [ PSDeclTypeRecord
+  importPropTyps
+  addExport ( PSDeclNameType { name: pcn.propsName
+                             , includeConstructors: false
+                             }
+            )
+  addExport (PSDeclNameFun pcn.funName)
+  rows <- traverse useRecordRow props
+  addDecls
+    [ PSDeclTypeRecord
       { name: pcn.propsName
-      , rows: propToPSRecordRow <$> props
+      , rows
       }
-  , PSDeclForeignRC pcn
-  ]
-  >>> addJSExport { name: pcn.foreignComponentName, member: jsMember }
+    , PSDeclForeignRC pcn
+    ]
+  addJSExport { name: pcn.foreignComponentName, member: jsMember }
+
   where
     importPropTyps =
-      traverseStateBuilders (addImportsForPropTyp <<< _.propTyp) props
+      traverse_ (usePropTypeDecl <<< _.propTyp) props
 
     pcn = mkCompNames name
 
@@ -143,15 +166,15 @@ addComponent isPrimary { name, props } =
       then Nothing
       else Just name
 
-addComponentImports :: State -> State
-addComponentImports =
-  addImportType  "React.Basic" "ReactComponent" false >>>
-  addImportFun   "React.Basic" "element" >>>
-  addImportClass "Untagged.Coercible" "Coercible" >>>
+addComponentImports :: Builder Unit
+addComponentImports = do
+  addImportType  "React.Basic" "ReactComponent" false
+  addImportFun   "React.Basic" "element"
+  addImportClass "Untagged.Coercible" "Coercible"
   addImportFun   "Untagged.Coercible" "coerce"
 
-build :: String -> (State -> State) -> ModuleBundle
-build name builderF =
+build :: String -> Builder Unit -> ModuleBundle
+build name builder =
   { name
   , psModule:
     { name: "Antd." <> name
@@ -176,7 +199,7 @@ build name builderF =
       , jsExports: mempty
       }
 
-    finalState = builderF initState
+    finalState = execState builder initState
 
     -- note: Map.toUnfoldable already guarantees
     -- sorted keys
@@ -188,10 +211,11 @@ build name builderF =
       }
 
 
-propToPSRecordRow :: Prop -> PSRecordRow
-propToPSRecordRow p =
+useRecordRow :: Prop -> Builder PSRecordRow
+useRecordRow p =
+  usePropTypeDecl p.propTyp <#> \typeDecl ->
   { name: p.name
-  , typeDecl: psTypeDecl_ "Foo"--printPropTyp p.propTyp
+  , typeDecl
   , documentation
   }
   where
@@ -204,12 +228,6 @@ propToPSRecordRow p =
     documentation = case docSections of
       [] -> Nothing
       _ -> Just $ Array.intercalate "\n" docSections
-
-
-traverseStateBuilders :: forall f a. Foldable f => (a -> State -> State) -> f a -> State -> State
-traverseStateBuilders f as =
-  foldl (\acc a -> acc >>> f a)  identity as
-  -- also see: Data.Monoid.Endo
 
 type CompNames =
   { funName :: String
@@ -231,72 +249,3 @@ decapitalize :: String -> String
 decapitalize s = case String.uncons s of
   Just { head, tail } -> String.toLower (String.singleton head) <> tail
   Nothing -> s
-
-
-printPropTyp :: PropTyp -> String
-printPropTyp { typ, required } =
-  if required
-  then printTyp typ
-  else printTypCons "UndefinedOr" [typ]
-
-printTyp :: Typ -> String
-printTyp TypInt = "Int"
-printTyp TypString = "String"
-printTyp TypNumber = "Number"
-printTyp TypBoolean = "Boolean"
-printTyp (TypRef { name }) = name
-printTyp TypUnknown = "Foreign"
-printTyp (TypStringLit str) = "StringLit \"" <> str <> "\""
-printTyp (TypBooleanLit bool) = "BooleanLit \"" <> show bool <> "\""
-printTyp TypNode = "JSX"
-printTyp TypUnit = "Unit"
-printTyp (TypOneOf ts) =
-  Array.intercalate " |+| " $ printTyp <$> ts
-printTyp (TypArray t) =
-  printTypCons "Array" [t]
-printTyp (TypFn { effectful, input, output }) =
-  case effectful, input of
-    false, [] -> "Unit -> " <> printPropTyp output
-    false, [i0] -> printPropTyp i0 <> " -> " <> printPropTyp output
-    false, is -> printUncurriedFn "Fn"
-    true, [] -> printPropTypCons "Effect" [output]
-    true, is -> printUncurriedFn "EffectFn"
-
-  where
-    printUncurriedFn consPrefix =
-      printPropTypCons
-        (consPrefix <> (show (Array.length input)))
-        (Array.snoc input output)
-
-printTyp (TypRecord []) = "{}"
-printTyp (TypRecord es) =
-  "{ " <> entriesSection <> " }"
-  where
-    entriesSection =
-      Array.intercalate ", "
-      $ printEntrySection <$> es
-
-    printEntrySection { key, propTyp } =
-      key <> " :: " <> printPropTyp propTyp
-
-printPropTypCons :: String -> Array PropTyp -> String
-printPropTypCons cons args =
-  printCons cons $ printPropTyp <$> args
-
-printTypCons :: String -> Array Typ -> String
-printTypCons cons args =
-  printCons cons $ printTyp <$> args
-
--- typ
-
-printCons :: String -> Array String -> String
-printCons cons args =
-  cons <> argsSection
-  where
-    argsSection = fold $ (\a -> " " <> printArg a) <$> args
-
-printArg :: String -> String
-printArg arg =
-  if String.contains (Pattern " ") arg
-  then "(" <> arg <> ")"
-  else arg

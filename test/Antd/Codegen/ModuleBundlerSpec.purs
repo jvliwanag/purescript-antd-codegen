@@ -5,7 +5,7 @@ module Antd.Codegen.ModuleBundlerSpec
 import Prelude
 
 import Antd.Codegen.ModuleBundler (createModuleBundle)
-import Antd.Codegen.Types (ModuleBundle, PSDecl(..), PSDeclName(..), PSModule, PSTypeDecl, Prop, PropTyp, Typ(..), optionalPropTyp, prop, psTypeDecl, psTypeDeclOp, psTypeDecl_, requiredPropTyp)
+import Antd.Codegen.Types (ModuleBundle, PSDecl(..), PSDeclName(..), PSModule, PSTypeDecl, Prop, PropTyp, Typ(..), optionalPropTyp, prop, psTypeArgSymbol, psTypeDecl, psTypeDecl', psTypeDeclOp, psTypeDecl_, requiredPropTyp)
 import Data.Array as Array
 import Data.Foldable (traverse_)
 import Data.Maybe (Maybe(..), isJust, isNothing)
@@ -70,15 +70,15 @@ moduleBundlerSpec =
         `shouldContainImport`
         (importType "Foreign" "Foreign")
 
-    it "should import StringLit" do
-      (moduleWithRequiredTyp (TypStringLit "foo"))
-        `shouldContainImport`
-        (importType "Literals" "StringLit")
+    it "should support StringLit" do
+      let m = (moduleWithRequiredTyp (TypStringLit "foo"))
+      m `shouldContainImport` (importType "Literals" "StringLit")
+      m `shouldHaveProp` (psTypeDecl' "StringLit" [psTypeArgSymbol "foo"])
 
     it "should import BooleanLit" do
-      (moduleWithRequiredTyp (TypBooleanLit true))
-        `shouldContainImport`
-        (importType "Literals" "BooleanLit")
+      let m = (moduleWithRequiredTyp (TypBooleanLit true))
+      m `shouldContainImport` (importType "Literals" "BooleanLit")
+      m `shouldHaveProp` (psTypeDecl' "BooleanLit" [psTypeArgSymbol "true"])
 
     it "should support JSX" do
       let mod = moduleWithRequiredTyp TypNode
@@ -265,108 +265,3 @@ itShouldImportPreludeForTyp typ =
       [ prop "bar" $ requiredPropTyp typ
       ]
     ).importPrelude `shouldEqual` true
-
-
-{-
-
-    describe "types" do
-      itShouldPrintTyp TypInt "Int"
-      itShouldPrintTyp TypString "String"
-      itShouldPrintTyp TypInt "Int"
-      itShouldPrintTyp TypNumber "Number"
-      itShouldPrintTyp TypBoolean "Boolean"
-      itShouldPrintTyp (TypRef { name: "Foo" }) "Foo"
-      itShouldPrintTyp TypUnknown "Foreign"
-      itShouldPrintTyp (TypStringLit "Foo") "StringLit \"Foo\""
-      itShouldPrintTyp (TypBooleanLit true) "BooleanLit \"true\""
-      itShouldPrintTyp (TypBooleanLit false) "BooleanLit \"false\""
-      itShouldPrintTyp TypNode "JSX"
-      itShouldPrintTyp TypUnit "Unit"
-
-      -- oneof
-      itShouldPrintTyp (TypOneOf [TypInt, TypString, TypNode]) $
-        "Int |+| String |+| JSX"
-
-      -- array
-      itShouldPrintTyp (TypArray TypInt) $
-        "Array Int"
-      itShouldPrintTyp (TypArray (TypOneOf [TypInt, TypString])) $
-        "Array (Int |+| String)"
-
-      -- todo allow input as undefinedor
-      -- fn
-      itShouldPrintTyp (TypFn { effectful: false
-                              , input: []
-                              , output: requiredPropTyp TypInt
-                              }) $
-        "Unit -> Int"
-
-      itShouldPrintTyp (TypFn { effectful: false
-                              , input: [ requiredPropTyp TypString
-                                       ]
-                              , output: requiredPropTyp TypInt
-                              }) $
-        "String -> Int"
-
-      itShouldPrintTyp (TypFn { effectful: false
-                              , input: [ requiredPropTyp TypString
-                                       , requiredPropTyp TypBoolean
-                                       ]
-                              , output: requiredPropTyp (TypArray TypInt)
-                              }) $
-        "Fn2 String Boolean (Array Int)"
-
-      itShouldPrintTyp (TypFn { effectful: true
-                              , input: []
-                              , output: requiredPropTyp TypInt
-                              }) $
-        "Effect Int"
-
-      itShouldPrintTyp (TypFn { effectful: true
-                              , input: [ requiredPropTyp TypString
-                                       ]
-                              , output: requiredPropTyp TypInt
-                              }) $
-        "EffectFn1 String Int"
-
-      itShouldPrintTyp (TypFn { effectful: true
-                              , input: [ requiredPropTyp TypString
-                                       , requiredPropTyp TypBoolean
-                                       ]
-                              , output: requiredPropTyp (TypArray TypInt)
-                              }) $
-        "EffectFn2 String Boolean (Array Int)"
-
-      -- optional in fn
-      itShouldPrintTyp (TypFn { effectful: false
-                              , input: [ optionalPropTyp TypString
-                                       , requiredPropTyp TypBoolean
-                                       ]
-                              , output: optionalPropTyp (TypArray TypInt)
-                              }) $
-        "Fn2 (UndefinedOr String) Boolean (UndefinedOr (Array Int))"
-
-      -- record
-      itShouldPrintTyp (TypRecord []) "{}"
-
-      itShouldPrintTyp
-        ( TypRecord
-          [ { key: "foo", propTyp: optionalPropTyp TypString }
-          , { key: "bar", propTyp: requiredPropTyp TypBoolean }
-          , { key: "baz"
-            , propTyp: optionalPropTyp (TypOneOf [ TypString
-                                                 , TypBoolean
-                                                 ]
-                                       )
-            }
-          ]
-        ) $
-        "{ foo :: UndefinedOr String, bar :: Boolean, baz :: UndefinedOr (String |+| Boolean) }"
-
-
-itShouldPrintTyp :: Typ -> String -> Spec Unit
-itShouldPrintTyp typ expected = do
-  it ("should print typ " <> show typ) do
-    printTyp typ `shouldEqual` expected
-
--}
