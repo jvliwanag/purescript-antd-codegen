@@ -5,7 +5,7 @@ module Antd.Codegen.ModuleBundlerSpec
 import Prelude
 
 import Antd.Codegen.ModuleBundler (createModuleBundle)
-import Antd.Codegen.Types (ModuleBundle, PSDecl(..), PSDeclName(..), PSModule, PSTypeDecl, Prop, PropTyp, Typ(..), optionalPropTyp, prop, psTypeArgSymbol, psTypeDecl, psTypeDecl', psTypeDeclOp, psTypeDecl_, requiredPropTyp)
+import Antd.Codegen.Types (ModuleBundle, PSDecl(..), PSDeclName(..), PSModule, PSTypeDecl, Prop, PropTyp, Typ(..), optionalPropTyp, prop_, psTypeArgSymbol, psTypeDecl, psTypeDecl', psTypeDeclOp, psTypeDecl_, requiredPropTyp)
 import Data.Array as Array
 import Data.Foldable (traverse_)
 import Data.Maybe (Maybe(..), isJust, isNothing)
@@ -221,7 +221,7 @@ moduleWithRequiredTyp =
 
 moduleWithPropTyp :: PropTyp -> PSModule
 moduleWithPropTyp propTyp =
-  createFooPSModule [ prop "bar" propTyp
+  createFooPSModule [ prop_ "bar" propTyp
                     ]
 
 createFooPSModule :: Array Prop -> PSModule
@@ -262,6 +262,6 @@ itShouldImportPreludeForTyp :: Typ -> Spec Unit
 itShouldImportPreludeForTyp typ =
   it ("should import prelude for " <> show typ) do
     ( createFooPSModule
-      [ prop "bar" $ requiredPropTyp typ
+      [ prop_ "bar" $ requiredPropTyp typ
       ]
     ).importPrelude `shouldEqual` true

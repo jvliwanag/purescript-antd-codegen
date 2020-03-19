@@ -68,20 +68,20 @@ printDecl (PSDeclTypeRecord { name, rows }) =
     rowsSection =
       Array.intercalate "\n" $ printRow `mapWithIndex` rows
 
-    printRow ndx { name: rowName, typeDecl, documentation } =
+    printRow ndx { name: rowName, typeDecl, doc } =
       docSection
       <> delim <> rowName <> " :: " <> printTypeDecl typeDecl
       where
-        docSection = case documentation of
-          Just d -> printDocumentation ndx d <> "\n"
+        docSection = case doc of
+          Just d -> printDoc ndx d <> "\n"
           Nothing -> ""
 
-        delim = case ndx, isJust documentation of
+        delim = case ndx, isJust doc of
           0, false -> " "
           0, true -> "      "
           _, _    -> "    , "
 
-    printDocumentation ndx doc =
+    printDoc ndx doc =
       Array.intercalate "\n"
       $ (\docLnNdx t ->
           case ndx, docLnNdx of

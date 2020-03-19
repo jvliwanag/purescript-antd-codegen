@@ -216,18 +216,8 @@ useRecordRow p =
   usePropTypeDecl p.propTyp <#> \typeDecl ->
   { name: p.name
   , typeDecl
-  , documentation
+  , doc: p.doc
   }
-  where
-    docSections = Array.catMaybes
-      [ p.docDescription
-      , ("Type: " <> _) <$> p.docType
-      , ("Default: " <> _) <$> p.docDefault
-      ]
-
-    documentation = case docSections of
-      [] -> Nothing
-      _ -> Just $ Array.intercalate "\n" docSections
 
 type CompNames =
   { funName :: String

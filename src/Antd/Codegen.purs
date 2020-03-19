@@ -75,9 +75,9 @@ tableModule =
     { name: "Table"
     , props:
       [ { name: "tableLayout"
-        , docDescription: Just "[table-layout](https://developer.mozilla.org/en-US/docs/Web/CSS/table-layout) attribute of table element"
-        , docType: Just "- | `auto` | `fixed`"
-        , docDefault: Just "-<hr />`fixed` when header/columns are fixed, or using `column.ellipsis`"
+        , doc: Just $ "[table-layout](https://developer.mozilla.org/en-US/docs/Web/CSS/table-layout) attribute of table element"
+          <> "\nType: - | `auto` | `fixed`"
+          <> "\nDefault: -<hr />`fixed` when header/columns are fixed, or using `column.ellipsis`"
         , propTyp:
         { required: false
         , typ: TypOneOf [ TypStringLit "auto", TypStringLit "fixed" ]
@@ -85,9 +85,9 @@ tableModule =
         }
 
       , { name: "bordered"
-        , docDescription: Just "Whether to show all table borders"
-        , docType: Just "boolean"
-        , docDefault: Just "`false`"
+        , doc: Just $ "Whether to show all table borders"
+          <> "\nType: boolean"
+          <> "\nDefault: `false`"
         , propTyp:
         { required: false
         , typ: TypBoolean
@@ -95,9 +95,9 @@ tableModule =
         }
 
       , { name: "columns"
-        , docDescription: Just "Columns of table"
-        , docType: Just "[ColumnProps](#Column)[]"
-        , docDefault: Just "-"
+        , doc: Just $ "Columns of table"
+          <> "\nType: [ColumnProps](#Column)[]"
+          <> "\nDefault: -"
         , propTyp:
         { required: false
         , typ: TypArray (TypRef { name: "ColumnProps" })
@@ -105,9 +105,9 @@ tableModule =
         }
 
       , { name: "components"
-        , docDescription: Just "Override default table elements"
-        , docType: Just "[TableComponents](https://git.io/fANxz)"
-        , docDefault: Just "-"
+        , doc: Just $ "Override default table elements"
+          <> "\nType: [TableComponents](https://git.io/fANxz)"
+          <> "\nDefault: -"
         , propTyp:
         { required: false
         , typ: TypUnknown
@@ -115,9 +115,9 @@ tableModule =
         }
 
       , { name: "dataSource"
-        , docDescription: Just "Data record array to be displayed"
-        , docType: Just "any[]"
-        , docDefault: Just "-"
+        , doc: Just $ "Data record array to be displayed"
+          <> "\nType: any[]"
+          <> "\nDefault: -"
         , propTyp:
         { required: false
         , typ: TypArray TypUnknown
@@ -125,9 +125,9 @@ tableModule =
         }
 
       , { name: "expandable"
-        , docDescription: Just "Config expandable content"
-        , docType: Just "[expandable](#expandable)"
-        , docDefault: Just "-"
+        , doc: Just $ "Config expandable content"
+          <> "\nType: [expandable](#expandable)"
+          <> "\nDefault: -"
         , propTyp:
         { required: false
         , typ: TypRef ({ name: "Expandable" })
@@ -135,9 +135,9 @@ tableModule =
         }
 
       , { name: "footer"
-        , docDescription: Just "Table footer renderer"
-        , docType: Just "Function(currentPageData)"
-        , docDefault: Just "-"
+        , doc: Just $ "Table footer renderer"
+          <> "\nType: Function(currentPageData)"
+          <> "\nDefault: -"
         , propTyp:
         { required: false
         , typ: TypFn { effectful: false
@@ -149,9 +149,9 @@ tableModule =
         }
 
       , { name: "loading"
-        , docDescription: Just "Loading status of table"
-        , docType: Just "boolean|[object](https://ant.design/components/spin-cn/#API) ([more](https://github.com/ant-design/ant-design/issues/4544#issuecomment-271533135))"
-        , docDefault: Just "`false`"
+        , doc: Just $ "Loading status of table"
+          <> "\nType: boolean|[object](https://ant.design/components/spin-cn/#API) ([more](https://github.com/ant-design/ant-design/issues/4544#issuecomment-271533135))"
+          <> "\nDefault: `false`"
         , propTyp:
         { required: false
         , typ: TypOneOf [ TypBoolean ]
@@ -159,9 +159,9 @@ tableModule =
         }
 
       , { name: "locale"
-        , docDescription: Just "i18n text including filter, sort, empty text, etc"
-        , docType: Just "object"
-        , docDefault: Just "filterConfirm: 'Ok' <br> filterReset: 'Reset' <br> emptyText: 'No Data' <br> [Default](https: //github.com/ant-design/ant-design/issues/575#issuecomment-159169511)"
+        , doc: Just $ "i18n text including filter, sort, empty text, etc"
+          <> "\nType: object"
+          <> "\nDefault: filterConfirm: 'Ok' <br> filterReset: 'Reset' <br> emptyText: 'No Data' <br> [Default](https: //github.com/ant-design/ant-design/issues/575#issuecomment-159169511)"
         , propTyp:
         { required: false
         , typ: TypRecord
@@ -188,9 +188,9 @@ tableModule =
         }
 
       , { name: "pagination"
-        , docDescription: Just "Config of pagination. You can ref table pagination [config](#pagination) or full [`pagination`](/components/pagination/) document, hide it by setting it to `false`"
-        , docType: Just "object"
-        , docDefault: Just "-"
+        , doc: Just $ "Config of pagination. You can ref table pagination [config](#pagination) or full [`pagination`](/components/pagination/) document, hide it by setting it to `false`"
+          <> "\nType: object"
+          <> "\nDefault: -"
         , propTyp:
         { required: false
         , typ: TypUnknown
@@ -198,9 +198,9 @@ tableModule =
         }
 
       , { name: "rowClassName"
-        , docDescription: Just "Row's className"
-        , docType: Just "Function(record, index):string"
-        , docDefault: Just "-"
+        , doc: Just $ "Row's className"
+          <> "\nType: Function(record, index):string"
+          <> "\nDefault: -"
         , propTyp:
         { required: false
         , typ: TypUnknown
@@ -208,9 +208,9 @@ tableModule =
         }
 
       , { name: "rowKey"
-        , docDescription: Just "Row's unique key, could be a string or function that returns a string"
-        , docType: Just "string|Function(record):string"
-        , docDefault: Just "`key`"
+        , doc: Just $ "Row's unique key, could be a string or function that returns a string"
+          <> "\nType: string|Function(record):string"
+          <> "\nDefault: `key`"
         , propTyp:
         { required: false
         , typ: TypString
@@ -218,9 +218,9 @@ tableModule =
         }
 
       , { name: "rowSelection"
-        , docDescription: Just "Row selection [config](#rowSelection)"
-        , docType: Just "object"
-        , docDefault: Just "null"
+        , doc: Just $ "Row selection [config](#rowSelection)"
+          <> "\nType: object"
+          <> "\nDefault: null"
         , propTyp:
         { required: false
         , typ: TypRef { name: "RowSelection" }
@@ -228,9 +228,9 @@ tableModule =
         }
 
       , { name: "scroll"
-        , docDescription: Just "Whether the table can be scrollable, [config](#scroll)"
-        , docType: Just "object"
-        , docDefault: Just "-"
+        , doc: Just $ "Whether the table can be scrollable, [config](#scroll)"
+          <> "\nType: object"
+          <> "\nDefault: -"
         , propTyp:
         { required: false
         , typ: TypRef { name: "Scroll" }
@@ -238,9 +238,9 @@ tableModule =
         }
 
       , { name: "showHeader"
-        , docDescription: Just "Whether to show table header"
-        , docType: Just "boolean"
-        , docDefault: Just "`true`"
+        , doc: Just $ "Whether to show table header"
+          <> "\nType: boolean"
+          <> "\nDefault: `true`"
         , propTyp:
         { required: false
         , typ: TypBoolean
@@ -248,9 +248,9 @@ tableModule =
         }
 
       , { name: "size"
-        , docDescription: Just "Size of table"
-        , docType: Just "`default` | `middle` | `small`"
-        , docDefault: Just "`default`"
+        , doc: Just $ "Size of table"
+          <> "\nType: `default` | `middle` | `small`"
+          <> "\nDefault: `default`"
         , propTyp:
         { required: false
         , typ: TypOneOf [ TypStringLit "default"
@@ -261,9 +261,9 @@ tableModule =
         }
 
       , { name: "summary"
-        , docDescription: Just "Summary content"
-        , docType: Just "(currentData) => ReactNode"
-        , docDefault: Just "-"
+        , doc: Just $ "Summary content"
+          <> "\nType: (currentData) => ReactNode"
+          <> "\nDefault: -"
         , propTyp:
         { required: false
         , typ: TypFn { effectful: false
@@ -274,9 +274,9 @@ tableModule =
         }
 
       , { name: "title"
-        , docDescription: Just "Table title renderer"
-        , docType: Just "Function(currentPageData)"
-        , docDefault: Just "-"
+        , doc: Just $ "Table title renderer"
+          <> "\nType: Function(currentPageData)"
+          <> "\nDefault: -"
         , propTyp:
         { required: false
         , typ: TypFn { effectful: false
@@ -288,9 +288,9 @@ tableModule =
         }
 
       , { name: "onChange"
-        , docDescription: Just "Callback executed when pagination, filters or sorter is changed"
-        , docType: Just "Function(pagination, filters, sorter, extra: { currentDataSource: [] })"
-        , docDefault: Just "-"
+        , doc: Just $ "Callback executed when pagination, filters or sorter is changed"
+          <> "\nType: Function(pagination, filters, sorter, extra: { currentDataSource: [] })"
+          <> "\nDefault: -"
         , propTyp:
         { required: false
         , typ: TypFn { effectful: true
@@ -305,9 +305,9 @@ tableModule =
         }
 
       , { name: "onHeaderRow"
-        , docDescription: Just "Set props on per header row"
-        , docType: Just "Function(column, index)"
-        , docDefault: Just "-"
+        , doc: Just $ "Set props on per header row"
+          <> "\nType: Function(column, index)"
+          <> "\nDefault: -"
         , propTyp:
         { required: false
         , typ: TypFn { effectful: true
@@ -321,9 +321,9 @@ tableModule =
         }
 
       , { name: "onRow"
-        , docDescription: Just "Set props on per row"
-        , docType: Just "Function(record, index)"
-        , docDefault: Just "-"
+        , doc: Just $ "Set props on per row"
+          <> "\nType: Function(record, index)"
+          <> "\nDefault: -"
         , propTyp:
         { required: false
         , typ: TypFn { effectful: true
@@ -336,9 +336,9 @@ tableModule =
         }
 
       , { name: "getPopupContainer"
-        , docDescription: Just "the render container of dropdowns in table"
-        , docType: Just "(triggerNode) => HTMLElement"
-        , docDefault: Just "`() => TableHtmlElement`"
+        , doc: Just $ "the render container of dropdowns in table"
+          <> "\nType: (triggerNode) => HTMLElement"
+          <> "\nDefault: `() => TableHtmlElement`"
         , propTyp:
         { required: false
         , typ: TypFn { effectful: false
@@ -350,9 +350,9 @@ tableModule =
         }
 
       , { name: "sortDirections"
-        , docDescription: Just "supported sort way, could be `'ascend'`, `'descend'`"
-        , docType: Just "Array"
-        , docDefault: Just "`['ascend', 'descend']`"
+        , doc: Just $ "supported sort way, could be `'ascend'`, `'descend'`"
+          <> "\nType: Array"
+          <> "\nDefault: `['ascend', 'descend']`"
         , propTyp:
         { required: false
         , typ: TypArray (TypOneOf [ TypStringLit "ascend", TypStringLit "descend" ])
@@ -368,9 +368,9 @@ tableModule =
 columnPropsDef :: Array Prop
 columnPropsDef =
   [ { name: "align"
-    , docDescription: Just "specify which way that column is aligned"
-    , docType: Just "`left` | `right` | `center`"
-    , docDefault: Just "`left`"
+    , doc: Just $ "specify which way that column is aligned"
+      <> "\nType: `left` | `right` | `center`"
+      <> "\nDefault: `left`"
     , propTyp:
       { required: false
       , typ: TypOneOf [ TypStringLit "left",  TypStringLit "right", TypStringLit "center" ]
@@ -378,9 +378,9 @@ columnPropsDef =
     }
 
   , { name: "ellipsis"
-    , docDescription: Just "ellipsis cell content, not working with sorter and filters for now.<br />tableLayout would be `fixed` when `ellipsis` is true."
-    , docType: Just "boolean"
-    , docDefault: Just "false"
+    , doc: Just $ "ellipsis cell content, not working with sorter and filters for now.<br />tableLayout would be `fixed` when `ellipsis` is true."
+      <> "\nType: boolean"
+      <> "\nDefault: false"
     , propTyp:
       { required: false
       , typ: TypBoolean
@@ -388,9 +388,9 @@ columnPropsDef =
     }
 
   , { name: "className"
-    , docDescription: Just "className of this column"
-    , docType: Just "string"
-    , docDefault: Just "-"
+    , doc: Just $ "className of this column"
+      <> "\nType: string"
+      <> "\nDefault: -"
     , propTyp:
       { required: false
       , typ: TypString
@@ -398,9 +398,9 @@ columnPropsDef =
     }
 
   , { name: "colSpan"
-    , docDescription: Just "Span of this column's title"
-    , docType: Just "number"
-    , docDefault: Just "-"
+    , doc: Just $ "Span of this column's title"
+      <> "\nType: number"
+      <> "\nDefault: -"
     , propTyp:
       { required: false
       , typ: TypNumber
@@ -408,9 +408,9 @@ columnPropsDef =
     }
 
   , { name: "dataIndex"
-    , docDescription: Just "Display field of the data record, support nest path by string array"
-    , docType: Just "string | string[]"
-    , docDefault: Just "-"
+    , doc: Just $ "Display field of the data record, support nest path by string array"
+      <> "\nType: string | string[]"
+      <> "\nDefault: -"
     , propTyp:
       { required: false
       , typ: TypOneOf [ TypString, TypArray TypString ]
@@ -418,9 +418,9 @@ columnPropsDef =
     }
 
   , { name: "defaultFilteredValue"
-    , docDescription: Just "Default filtered values"
-    , docType: Just "string | []"
-    , docDefault: Just "- |"
+    , doc: Just $ "Default filtered values"
+      <> "\nType: string | []"
+      <> "\nDefault: - |"
     , propTyp:
       { required: false
       , typ: TypArray TypString
@@ -428,9 +428,9 @@ columnPropsDef =
     }
 
   , { name: "defaultSortOrder"
-    , docDescription: Just "Default order of sorted values"
-    , docType: Just "`ascend` | `descend`"
-    , docDefault: Just "-"
+    , doc: Just $ "Default order of sorted values"
+      <> "\nType: `ascend` | `descend`"
+      <> "\nDefault: -"
     , propTyp:
       { required: false
       , typ: TypOneOf [ TypStringLit "ascend", TypStringLit "descend" ]
@@ -438,9 +438,9 @@ columnPropsDef =
     }
 
   , { name: "filterDropdown"
-    , docDescription: Just "Customized filter overlay"
-    , docType: Just "React.ReactNode | (props: [FilterDropdownProps](https://git.io/fjP5h)) => React.ReactNode"
-    , docDefault: Just "-"
+    , doc: Just $ "Customized filter overlay"
+      <> "\nType: React.ReactNode | (props: [FilterDropdownProps](https://git.io/fjP5h)) => React.ReactNode"
+      <> "\nDefault: -"
     , propTyp:
       { required: false
       , typ: TypOneOf [ TypNode
@@ -455,9 +455,9 @@ columnPropsDef =
     }
 
   , { name: "filterDropdownVisible"
-    , docDescription: Just "Whether `filterDropdown` is visible"
-    , docType: Just "boolean"
-    , docDefault: Just "-"
+    , doc: Just $ "Whether `filterDropdown` is visible"
+      <> "\nType: boolean"
+      <> "\nDefault: -"
     , propTyp:
       { required: false
       , typ: TypBoolean
@@ -465,9 +465,9 @@ columnPropsDef =
     }
 
   , { name: "filtered"
-    , docDescription: Just "Whether the `dataSource` is filtered"
-    , docType: Just "boolean"
-    , docDefault: Just "`false`"
+    , doc: Just $ "Whether the `dataSource` is filtered"
+      <> "\nType: boolean"
+      <> "\nDefault: `false`"
     , propTyp:
       { required: false
       , typ: TypBoolean
@@ -475,9 +475,9 @@ columnPropsDef =
     }
 
   , { name: "filteredValue"
-    , docDescription: Just "Controlled filtered value, filter icon will highlight"
-    , docType: Just "string[]"
-    , docDefault: Just "-"
+    , doc: Just $ "Controlled filtered value, filter icon will highlight"
+      <> "\nType: string[]"
+      <> "\nDefault: -"
     , propTyp:
       { required: false
       , typ: TypArray TypString
@@ -485,9 +485,9 @@ columnPropsDef =
     }
 
   , { name: "filterIcon"
-    , docDescription: Just "Customized filter icon"
-    , docType: Just "ReactNode|(filtered: boolean) => ReactNode"
-    , docDefault: Just "`false`"
+    , doc: Just $ "Customized filter icon"
+      <> "\nType: ReactNode|(filtered: boolean) => ReactNode"
+      <> "\nDefault: `false`"
     , propTyp:
       { required: false
       , typ: TypOneOf [ TypNode
@@ -501,9 +501,9 @@ columnPropsDef =
     }
 
   , { name: "filterMultiple"
-    , docDescription: Just "Whether multiple filters can be selected"
-    , docType: Just "boolean"
-    , docDefault: Just "`true`"
+    , doc: Just $ "Whether multiple filters can be selected"
+      <> "\nType: boolean"
+      <> "\nDefault: `true`"
     , propTyp:
       { required: false
       , typ: TypBoolean
@@ -511,9 +511,9 @@ columnPropsDef =
     }
 
   , { name: "filters"
-    , docDescription: Just "Filter menu config"
-    , docType: Just "object[]"
-    , docDefault: Just "-"
+    , doc: Just $ "Filter menu config"
+      <> "\nType: object[]"
+      <> "\nDefault: -"
     , propTyp:
       { required: false
       , typ: TypArray TypUnknown
@@ -521,9 +521,9 @@ columnPropsDef =
     }
 
   , { name: "fixed"
-    , docDescription: Just "(\"IE not support) Set column to be fixed: `true`(same as left) `'left'` `'right'`"
-    , docType: Just "boolean|string"
-    , docDefault: Just "`false`"
+    , doc: Just $ "(\"IE not support) Set column to be fixed: `true`(same as left) `'left'` `'right'`"
+      <> "\nType: boolean|string"
+      <> "\nDefault: `false`"
     , propTyp:
       { required: false
       , typ: TypOneOf [ TypBoolean
@@ -533,9 +533,9 @@ columnPropsDef =
     }
 
   , { name: "key"
-    , docDescription: Just "Unique key of this column, you can ignore this prop if you've set a unique `dataIndex`"
-    , docType: Just "string"
-    , docDefault: Just "-"
+    , doc: Just $ "Unique key of this column, you can ignore this prop if you've set a unique `dataIndex`"
+      <> "\nType: string"
+      <> "\nDefault: -"
     , propTyp:
       { required: false
       , typ: TypString
@@ -543,9 +543,9 @@ columnPropsDef =
     }
 
   , { name: "render"
-    , docDescription: Just"Renderer of the table cell. The return value should be a ReactNode, or an object for [colSpan/rowSpan config](#components-table-demo-colspan-rowspan)"
-    , docType: Just "Function(text, record, index) {}"
-    , docDefault: Just "-"
+    , doc: Just $"Renderer of the table cell. The return value should be a ReactNode, or an object for [colSpan/rowSpan config](#components-table-demo-colspan-rowspan)"
+      <> "\nType: Function(text, record, index) {}"
+      <> "\nDefault: -"
     , propTyp:
       { required: false
       , typ: TypFn { effectful: false
@@ -560,9 +560,9 @@ columnPropsDef =
     }
 
   , { name: "sorter"
-    , docDescription: Just "Sort function for local sort, see [Array.sort](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/sort)'s compareFunction. If you need sort buttons only, set to `true`"
-    , docType: Just "Function|boolean"
-    , docDefault: Just "-"
+    , doc: Just $ "Sort function for local sort, see [Array.sort](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/sort)'s compareFunction. If you need sort buttons only, set to `true`"
+      <> "\nType: Function|boolean"
+      <> "\nDefault: -"
     , propTyp:
       { required: false
       , typ: TypOneOf [ TypBoolean
@@ -576,9 +576,9 @@ columnPropsDef =
     }
 
   , { name: "sortOrder"
-    , docDescription: Just "Order of sorted values: `'ascend'` `'descend'` `false`"
-    , docType: Just "boolean|string"
-    , docDefault: Just "-"
+    , doc: Just $ "Order of sorted values: `'ascend'` `'descend'` `false`"
+      <> "\nType: boolean|string"
+      <> "\nDefault: -"
     , propTyp:
       { required: false
       , typ: TypOneOf [ TypBooleanLit false
@@ -589,9 +589,9 @@ columnPropsDef =
     }
 
   , { name: "sortDirections"
-    , docDescription: Just "supported sort way, override `sortDirections` in `Table`, could be `'ascend'`, `'descend'`"
-    , docType: Just "Array"
-    , docDefault: Just "`['ascend', 'descend']`"
+    , doc: Just $ "supported sort way, override `sortDirections` in `Table`, could be `'ascend'`, `'descend'`"
+      <> "\nType: Array"
+      <> "\nDefault: `['ascend', 'descend']`"
     , propTyp:
       { required: false
       , typ: TypArray ( TypOneOf [ TypStringLit "ascend"
@@ -602,9 +602,9 @@ columnPropsDef =
     }
 
   , { name: "title"
-    , docDescription: Just "Title of this column"
-    , docType: Just "ReactNode|({ sortOrder, sortColumn, filters }) => ReactNode"
-    , docDefault: Just "-"
+    , doc: Just $ "Title of this column"
+      <> "\nType: ReactNode|({ sortOrder, sortColumn, filters }) => ReactNode"
+      <> "\nDefault: -"
     , propTyp:
       { required: false
       , typ: TypOneOf [ TypNode
@@ -637,9 +637,9 @@ columnPropsDef =
     }
 
   , { name: "width"
-    , docDescription: Just "Width of this column ([width not working?](https://github.com/ant-design/ant-design/issues/13825#issuecomment-449889241))"
-    , docType: Just "string|number"
-    , docDefault: Just "-"
+    , doc: Just $ "Width of this column ([width not working?](https://github.com/ant-design/ant-design/issues/13825#issuecomment-449889241))"
+      <> "\nType: string|number"
+      <> "\nDefault: -"
     , propTyp:
       { required: false
       , typ: TypOneOf [ TypString, TypNumber ]
@@ -647,9 +647,9 @@ columnPropsDef =
     }
 
   , { name: "onCell"
-    , docDescription: Just "Set props on per cell"
-    , docType: Just "Function(record, rowIndex)"
-    , docDefault: Just "-"
+    , doc: Just $ "Set props on per cell"
+      <> "\nType: Function(record, rowIndex)"
+      <> "\nDefault: -"
     , propTyp:
       { required: false
       , typ: TypFn { effectful: true
@@ -662,9 +662,9 @@ columnPropsDef =
     }
 
   , { name: "onFilter"
-    , docDescription: Just "Callback executed when the confirm filter button is clicked"
-    , docType: Just "Function"
-    , docDefault: Just "-"
+    , doc: Just $ "Callback executed when the confirm filter button is clicked"
+      <> "\nType: Function"
+      <> "\nDefault: -"
     , propTyp:
       { required: false
       , typ: TypFn { effectful: true
@@ -675,9 +675,9 @@ columnPropsDef =
     }
 
   , { name: "onFilterDropdownVisibleChange"
-    , docDescription: Just "Callback executed when `filterDropdownVisible` is changed"
-    , docType: Just "function(visible) {}"
-    , docDefault: Just "-"
+    , doc: Just $ "Callback executed when `filterDropdownVisible` is changed"
+      <> "\nType: function(visible) {}"
+      <> "\nDefault: -"
     , propTyp:
       { required: false
       , typ: TypFn { effectful: true
@@ -689,9 +689,9 @@ columnPropsDef =
     }
 
   , { name: "onHeaderCell"
-    , docDescription: Just"Set props on per header cell"
-    , docType: Just "Function(column)"
-    , docDefault: Just "-"
+    , doc: Just $"Set props on per header cell"
+      <> "\nType: Function(column)"
+      <> "\nDefault: -"
     , propTyp:
       { required: false
       , typ: TypFn { effectful: true

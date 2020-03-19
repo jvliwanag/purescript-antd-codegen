@@ -3,6 +3,7 @@ module Antd.Codegen.Types
        , Component
        , Prop
        , prop
+       , prop_
        , PropTyp
        , requiredPropTyp
        , optionalPropTyp
@@ -50,20 +51,15 @@ type Component =
 
 type Prop
   = { name :: String
-    , docDescription :: Maybe String
-    , docType :: Maybe String
-    , docDefault :: Maybe String
     , propTyp :: PropTyp
+    , doc :: Maybe String
     }
 
-prop :: String -> PropTyp -> Prop
-prop name propTyp =
-  { name
-  , propTyp
-  , docDescription: Nothing
-  , docType: Nothing
-  , docDefault: Nothing
-  }
+prop :: String -> PropTyp -> Maybe String -> Prop
+prop name propTyp doc = { name, propTyp, doc }
+
+prop_ :: String -> PropTyp -> Prop
+prop_ name propTyp = prop name propTyp Nothing
 
 type PropTyp =
   { typ :: Typ
@@ -135,7 +131,7 @@ type PSImport = { mod :: String, names :: Array PSDeclName }
 type PSRecordRow =
   { name :: String
   , typeDecl :: PSTypeDecl
-  , documentation :: Maybe String
+  , doc :: Maybe String
   }
 
 data PSDecl

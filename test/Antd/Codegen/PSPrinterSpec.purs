@@ -296,8 +296,8 @@ psPrinterSpec =
           )
 
 recordRow :: String -> PSTypeDecl -> Maybe String -> PSRecordRow
-recordRow name typeDecl documentation =
-  { name, typeDecl, documentation }
+recordRow name typeDecl doc =
+  { name, typeDecl, doc }
 
 intTypeDecl :: PSTypeDecl
 intTypeDecl = psTypeDecl_ "Int"
