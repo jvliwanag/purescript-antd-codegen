@@ -7,7 +7,7 @@ import Prelude
 import Antd.Codegen.JSPrinter (printJSExports)
 import Antd.Codegen.ModuleBundler (createModuleBundle)
 import Antd.Codegen.PSPrinter (printModule)
-import Antd.Codegen.Types (AntModule, ModuleBundle, PSModule, Prop, Typ(..), JSExport, optionalPropTyp, prop_, requiredPropTyp)
+import Antd.Codegen.Types (AntModule, JSExport, ModuleBundle, PSModule, Prop, Typ(..), optionalProp, optionalProp_)
 import Data.Foldable (for_, traverse_)
 import Data.Maybe (Maybe(..))
 import Effect.Aff (Aff)
@@ -74,274 +74,229 @@ tableModule =
   { primaryComponent:
     { name: "Table"
     , props:
-      [ { name: "tableLayout"
-        , doc: Just $ "[table-layout](https://developer.mozilla.org/en-US/docs/Web/CSS/table-layout) attribute of table element"
+      [ optionalProp
+        "tableLayout"
+        (TypOneOf [ TypStringLit "auto", TypStringLit "fixed" ])
+        (Just $ "[table-layout](https://developer.mozilla.org/en-US/docs/Web/CSS/table-layout) attribute of table element"
           <> "\nType: - | `auto` | `fixed`"
           <> "\nDefault: -<hr />`fixed` when header/columns are fixed, or using `column.ellipsis`"
-        , propTyp:
-        { required: false
-        , typ: TypOneOf [ TypStringLit "auto", TypStringLit "fixed" ]
-        }
-        }
+        )
 
-      , { name: "bordered"
-        , doc: Just $ "Whether to show all table borders"
+      , optionalProp
+        "bordered"
+        TypBoolean
+        (Just $ "Whether to show all table borders"
           <> "\nType: boolean"
           <> "\nDefault: `false`"
-        , propTyp:
-        { required: false
-        , typ: TypBoolean
-        }
-        }
+        )
 
-      , { name: "columns"
-        , doc: Just $ "Columns of table"
+      , optionalProp
+        "columns"
+        (TypArray (TypRef { name: "ColumnProps" }))
+        (Just $ "Columns of table"
           <> "\nType: [ColumnProps](#Column)[]"
           <> "\nDefault: -"
-        , propTyp:
-        { required: false
-        , typ: TypArray (TypRef { name: "ColumnProps" })
-        }
-        }
+        )
 
-      , { name: "components"
-        , doc: Just $ "Override default table elements"
+      , optionalProp
+        "components"
+        TypUnknown
+        (Just $ "Override default table elements"
           <> "\nType: [TableComponents](https://git.io/fANxz)"
           <> "\nDefault: -"
-        , propTyp:
-        { required: false
-        , typ: TypUnknown
-        }
-        }
+        )
 
-      , { name: "dataSource"
-        , doc: Just $ "Data record array to be displayed"
+      , optionalProp
+        "dataSource"
+        (TypArray TypUnknown)
+        (Just $ "Data record array to be displayed"
           <> "\nType: any[]"
           <> "\nDefault: -"
-        , propTyp:
-        { required: false
-        , typ: TypArray TypUnknown
-        }
-        }
+        )
 
-      , { name: "expandable"
-        , doc: Just $ "Config expandable content"
+      , optionalProp
+        "expandable"
+        (TypRef ({ name: "Expandable" }))
+        (Just $ "Config expandable content"
           <> "\nType: [expandable](#expandable)"
           <> "\nDefault: -"
-        , propTyp:
-        { required: false
-        , typ: TypRef ({ name: "Expandable" })
-        }
-        }
+        )
 
-      , { name: "footer"
-        , doc: Just $ "Table footer renderer"
+
+      , optionalProp
+        "footer"
+        (TypFn { effectful: false
+               , input: [ TypUnknown
+                        ]
+               , output: TypNode
+               }
+        )
+        (Just $ "Table footer renderer"
           <> "\nType: Function(currentPageData)"
-          <> "\nDefault: -"
-        , propTyp:
-        { required: false
-        , typ: TypFn { effectful: false
-                     , input: [ requiredPropTyp TypUnknown
-                              ]
-                     , output: requiredPropTyp TypNode
-                     }
-        }
-        }
+          <> "\nDefault: -")
 
-      , { name: "loading"
-        , doc: Just $ "Loading status of table"
+
+      , optionalProp
+        "loading"
+        (TypOneOf [ TypBoolean ])
+        (Just $ "Loading status of table"
           <> "\nType: boolean|[object](https://ant.design/components/spin-cn/#API) ([more](https://github.com/ant-design/ant-design/issues/4544#issuecomment-271533135))"
           <> "\nDefault: `false`"
-        , propTyp:
-        { required: false
-        , typ: TypOneOf [ TypBoolean ]
-        }
-        }
+        )
 
-      , { name: "locale"
-        , doc: Just $ "i18n text including filter, sort, empty text, etc"
-          <> "\nType: object"
-          <> "\nDefault: filterConfirm: 'Ok' <br> filterReset: 'Reset' <br> emptyText: 'No Data' <br> [Default](https: //github.com/ant-design/ant-design/issues/575#issuecomment-159169511)"
-        , propTyp:
-        { required: false
-        , typ: TypRecord
-          [ prop_ "filterConfirm" $ optionalPropTyp TypString
-          , prop_ "filterReset" $ optionalPropTyp TypString
-          , prop_ "emptyText" $ optionalPropTyp TypString
+
+      , optionalProp
+        "locale"
+        (TypRecord
+          [ optionalProp_ "filterConfirm" TypString
+          , optionalProp_ "filterReset" TypString
+          , optionalProp_ "emptyText" TypString
           ]
-        }
-        }
-      , { name: "pagination"
-        , doc: Just $ "Config of pagination. You can ref table pagination [config](#pagination) or full [`pagination`](/components/pagination/) document, hide it by setting it to `false`"
+        )
+        (Just $ "i18n text including filter, sort, empty text, etc"
           <> "\nType: object"
-          <> "\nDefault: -"
-        , propTyp:
-        { required: false
-        , typ: TypUnknown
-        }
-        }
+          <> "\nDefault: filterConfirm: 'Ok' <br> filterReset: 'Reset' <br> emptyText: 'No Data' <br> [Default](https: //github.com/ant-design/ant-design/issues/575#issuecomment-159169511)")
 
-      , { name: "rowClassName"
-        , doc: Just $ "Row's className"
+
+      , optionalProp
+        "pagination"
+        TypUnknown
+        (Just $ "Config of pagination. You can ref table pagination [config](#pagination) or full [`pagination`](/components/pagination/) document, hide it by setting it to `false`"
+          <> "\nType: object"
+          <> "\nDefault: -")
+
+      , optionalProp
+        "rowClassName"
+        (TypUnknown)
+        (Just $ "Row's className"
           <> "\nType: Function(record, index):string"
-          <> "\nDefault: -"
-        , propTyp:
-        { required: false
-        , typ: TypUnknown
-        }
-        }
+          <> "\nDefault: -")
 
-      , { name: "rowKey"
-        , doc: Just $ "Row's unique key, could be a string or function that returns a string"
+      , optionalProp
+        "rowKey"
+        (TypString)
+        (Just $ "Row's unique key, could be a string or function that returns a string"
           <> "\nType: string|Function(record):string"
-          <> "\nDefault: `key`"
-        , propTyp:
-        { required: false
-        , typ: TypString
-        }
-        }
+          <> "\nDefault: `key`")
 
-      , { name: "rowSelection"
-        , doc: Just $ "Row selection [config](#rowSelection)"
+      , optionalProp
+        "rowSelection"
+        (TypRef { name: "RowSelection" })
+        (Just $ "Row selection [config](#rowSelection)"
           <> "\nType: object"
-          <> "\nDefault: null"
-        , propTyp:
-        { required: false
-        , typ: TypRef { name: "RowSelection" }
-        }
-        }
+          <> "\nDefault: null")
 
-      , { name: "scroll"
-        , doc: Just $ "Whether the table can be scrollable, [config](#scroll)"
+      , optionalProp
+        "scroll"
+        (TypRef { name: "Scroll" })
+        (Just $ "Whether the table can be scrollable, [config](#scroll)"
           <> "\nType: object"
-          <> "\nDefault: -"
-        , propTyp:
-        { required: false
-        , typ: TypRef { name: "Scroll" }
-        }
-        }
+          <> "\nDefault: -")
 
-      , { name: "showHeader"
-        , doc: Just $ "Whether to show table header"
+      , optionalProp
+        "showHeader"
+        (TypBoolean)
+        (Just $ "Whether to show table header"
           <> "\nType: boolean"
-          <> "\nDefault: `true`"
-        , propTyp:
-        { required: false
-        , typ: TypBoolean
-        }
-        }
+          <> "\nDefault: `true`")
 
-      , { name: "size"
-        , doc: Just $ "Size of table"
+      , optionalProp
+        "size"
+        (TypOneOf [ TypStringLit "default"
+                  , TypStringLit "middle"
+                  , TypStringLit "small"
+                  ])
+        (Just $ "Size of table"
           <> "\nType: `default` | `middle` | `small`"
-          <> "\nDefault: `default`"
-        , propTyp:
-        { required: false
-        , typ: TypOneOf [ TypStringLit "default"
-                        , TypStringLit "middle"
-                        , TypStringLit "small"
-                        ]
-        }
-        }
+          <> "\nDefault: `default`")
 
-      , { name: "summary"
-        , doc: Just $ "Summary content"
+      , optionalProp
+        "summary"
+        (TypFn { effectful: false
+                     , input: [ TypUnknown ]
+                     , output: TypNode
+                     }
+        )
+        (Just $ "Summary content"
           <> "\nType: (currentData) => ReactNode"
-          <> "\nDefault: -"
-        , propTyp:
-        { required: false
-        , typ: TypFn { effectful: false
-                     , input: [ requiredPropTyp TypUnknown ]
-                     , output: requiredPropTyp TypNode
-                     }
-        }
-        }
+          <> "\nDefault: -")
 
-      , { name: "title"
-        , doc: Just $ "Table title renderer"
+
+      , optionalProp
+        "title"
+        (TypFn { effectful: false
+                     , input: [ TypUnknown
+                              ]
+                     , output: TypNode
+                     }
+        )
+        (Just $ "Table title renderer"
           <> "\nType: Function(currentPageData)"
-          <> "\nDefault: -"
-        , propTyp:
-        { required: false
-        , typ: TypFn { effectful: false
-                     , input: [ requiredPropTyp TypUnknown
-                              ]
-                     , output: requiredPropTyp TypNode
-                     }
-        }
-        }
+          <> "\nDefault: -")
 
-      , { name: "onChange"
-        , doc: Just $ "Callback executed when pagination, filters or sorter is changed"
-          <> "\nType: Function(pagination, filters, sorter, extra: { currentDataSource: [] })"
-          <> "\nDefault: -"
-        , propTyp:
-        { required: false
-        , typ: TypFn { effectful: true
-                     , input: [ requiredPropTyp TypUnknown
-                              , requiredPropTyp TypUnknown
-                              , requiredPropTyp TypUnknown
-                              , requiredPropTyp TypUnknown
+      , optionalProp
+        "onChange"
+        (TypFn { effectful: true
+                     , input: [ TypUnknown
+                              , TypUnknown
+                              , TypUnknown
+                              , TypUnknown
                               ]
-                     , output: requiredPropTyp TypUnit
+                     , output: TypUnit
                      }
-        }
-        }
+        )
+        (Just $ "Callback executed when pagination, filters or sorter is changed"
+          <> "\nType: Function(pagination, filters, sorter, extra: { currentDataSource: [] })")
 
-      , { name: "onHeaderRow"
-        , doc: Just $ "Set props on per header row"
+
+      , optionalProp
+        "onHeaderRow"
+        (TypFn { effectful: true
+               , input: [ TypUnknown
+                        , TypInt
+                        , TypUnit
+                        ]
+               , output: TypUnit
+               }
+        )
+        (Just $ "Set props on per header row"
           <> "\nType: Function(column, index)"
-          <> "\nDefault: -"
-        , propTyp:
-        { required: false
-        , typ: TypFn { effectful: true
-                     , input: [ requiredPropTyp TypUnknown
-                              , requiredPropTyp TypInt
-                              , requiredPropTyp TypUnit
-                              ]
-                     , output: requiredPropTyp TypUnit
-                     }
-        }
-        }
+          <> "\nDefault: -")
 
-      , { name: "onRow"
-        , doc: Just $ "Set props on per row"
+
+      , optionalProp
+        "onRow"
+        (TypFn { effectful: true
+               , input: [ TypUnknown
+                        , TypInt
+                        ]
+               , output: TypUnit
+               }
+        )
+        (Just $ "Set props on per row"
           <> "\nType: Function(record, index)"
-          <> "\nDefault: -"
-        , propTyp:
-        { required: false
-        , typ: TypFn { effectful: true
-                     , input: [ requiredPropTyp TypUnknown
-                              , requiredPropTyp TypInt
-                              ]
-                     , output: requiredPropTyp TypUnit
-                     }
-        }
-        }
+          <> "\nDefault: -")
 
-      , { name: "getPopupContainer"
-        , doc: Just $ "the render container of dropdowns in table"
+
+      , optionalProp
+        "getPopupContainer"
+        (TypFn { effectful: false
+                     , input: [ TypUnknown
+                              ]
+                     , output: TypUnknown
+                     })
+        (Just $ "the render container of dropdowns in table"
           <> "\nType: (triggerNode) => HTMLElement"
-          <> "\nDefault: `() => TableHtmlElement`"
-        , propTyp:
-        { required: false
-        , typ: TypFn { effectful: false
-                     , input: [ requiredPropTyp TypUnknown
-                              ]
-                     , output: requiredPropTyp TypUnknown
-                     }
-        }
-        }
+          <> "\nDefault: `() => TableHtmlElement`")
 
-      , { name: "sortDirections"
-        , doc: Just $ "supported sort way, could be `'ascend'`, `'descend'`"
+
+      , optionalProp
+        "sortDirections"
+        (TypArray (TypOneOf [ TypStringLit "ascend", TypStringLit "descend" ]))
+        (Just $ "supported sort way, could be `'ascend'`, `'descend'`"
           <> "\nType: Array"
           <> "\nDefault: `['ascend', 'descend']`"
-        , propTyp:
-        { required: false
-        , typ: TypArray (TypOneOf [ TypStringLit "ascend", TypStringLit "descend" ])
-        }
-        }
+        )
       ]
     }
   , subComponents:
@@ -351,323 +306,258 @@ tableModule =
 
 columnPropsDef :: Array Prop
 columnPropsDef =
-  [ { name: "align"
-    , doc: Just $ "specify which way that column is aligned"
+  [ optionalProp
+    "align"
+    (TypOneOf [ TypStringLit "left",  TypStringLit "right", TypStringLit "center" ])
+    (Just $ "specify which way that column is aligned"
       <> "\nType: `left` | `right` | `center`"
       <> "\nDefault: `left`"
-    , propTyp:
-      { required: false
-      , typ: TypOneOf [ TypStringLit "left",  TypStringLit "right", TypStringLit "center" ]
-      }
-    }
+    )
 
-  , { name: "ellipsis"
-    , doc: Just $ "ellipsis cell content, not working with sorter and filters for now.<br />tableLayout would be `fixed` when `ellipsis` is true."
+  , optionalProp
+    "ellipsis"
+    TypBoolean
+    (Just $ "ellipsis cell content, not working with sorter and filters for now.<br />tableLayout would be `fixed` when `ellipsis` is true."
       <> "\nType: boolean"
-      <> "\nDefault: false"
-    , propTyp:
-      { required: false
-      , typ: TypBoolean
-      }
-    }
+      <> "\nDefault: false")
 
-  , { name: "className"
-    , doc: Just $ "className of this column"
+  , optionalProp
+    "className"
+    TypString
+    (Just $ "className of this column"
       <> "\nType: string"
-      <> "\nDefault: -"
-    , propTyp:
-      { required: false
-      , typ: TypString
-      }
-    }
+      <> "\nDefault: -")
 
-  , { name: "colSpan"
-    , doc: Just $ "Span of this column's title"
+  , optionalProp
+    "colSpan"
+    TypNumber
+    (Just $ "Span of this column's title"
       <> "\nType: number"
-      <> "\nDefault: -"
-    , propTyp:
-      { required: false
-      , typ: TypNumber
-      }
-    }
+      <> "\nDefault: -")
 
-  , { name: "dataIndex"
-    , doc: Just $ "Display field of the data record, support nest path by string array"
+  , optionalProp
+    "dataIndex"
+    (TypOneOf [ TypString, TypArray TypString ])
+    (Just $ "Display field of the data record, support nest path by string array"
       <> "\nType: string | string[]"
-      <> "\nDefault: -"
-    , propTyp:
-      { required: false
-      , typ: TypOneOf [ TypString, TypArray TypString ]
-      }
-    }
+      <> "\nDefault: -")
 
-  , { name: "defaultFilteredValue"
-    , doc: Just $ "Default filtered values"
+  , optionalProp
+    "defaultFilteredValue"
+    (TypArray TypString)
+    (Just $ "Default filtered values"
       <> "\nType: string | []"
-      <> "\nDefault: - |"
-    , propTyp:
-      { required: false
-      , typ: TypArray TypString
-      }
-    }
+      <> "\nDefault: - |")
 
-  , { name: "defaultSortOrder"
-    , doc: Just $ "Default order of sorted values"
+  , optionalProp
+    "defaultSortOrder"
+    (TypOneOf [ TypStringLit "ascend", TypStringLit "descend" ])
+    (Just $ "Default order of sorted values"
       <> "\nType: `ascend` | `descend`"
-      <> "\nDefault: -"
-    , propTyp:
-      { required: false
-      , typ: TypOneOf [ TypStringLit "ascend", TypStringLit "descend" ]
-      }
-    }
+      <> "\nDefault: -")
 
-  , { name: "filterDropdown"
-    , doc: Just $ "Customized filter overlay"
+  , optionalProp
+    "filterDropdown"
+    (TypOneOf [ TypNode
+              , TypFn { effectful: false
+                      , input: [ TypUnknown
+                               ]
+                      , output: TypNode
+                      }
+              ])
+    (Just $ "Customized filter overlay"
       <> "\nType: React.ReactNode | (props: [FilterDropdownProps](https://git.io/fjP5h)) => React.ReactNode"
       <> "\nDefault: -"
-    , propTyp:
-      { required: false
-      , typ: TypOneOf [ TypNode
-                    , TypFn { effectful: false
-                            , input: [ requiredPropTyp TypUnknown
-                                     ]
-                            , output: requiredPropTyp TypNode
-                            }
-                    ]
+    )
 
-      }
-    }
-
-  , { name: "filterDropdownVisible"
-    , doc: Just $ "Whether `filterDropdown` is visible"
+  , optionalProp
+    "filterDropdownVisible"
+    (TypBoolean)
+    (Just $ "Whether `filterDropdown` is visible"
       <> "\nType: boolean"
       <> "\nDefault: -"
-    , propTyp:
-      { required: false
-      , typ: TypBoolean
-      }
-    }
+    )
 
-  , { name: "filtered"
-    , doc: Just $ "Whether the `dataSource` is filtered"
+  , optionalProp
+    "filtered"
+    (TypBoolean)
+    (Just $ "Whether the `dataSource` is filtered"
       <> "\nType: boolean"
       <> "\nDefault: `false`"
-    , propTyp:
-      { required: false
-      , typ: TypBoolean
-      }
-    }
+    )
 
-  , { name: "filteredValue"
-    , doc: Just $ "Controlled filtered value, filter icon will highlight"
+  , optionalProp
+    "filteredValue"
+    (TypArray TypString)
+    (Just $ "Controlled filtered value, filter icon will highlight"
       <> "\nType: string[]"
       <> "\nDefault: -"
-    , propTyp:
-      { required: false
-      , typ: TypArray TypString
-      }
-    }
+    )
 
-  , { name: "filterIcon"
-    , doc: Just $ "Customized filter icon"
-      <> "\nType: ReactNode|(filtered: boolean) => ReactNode"
-      <> "\nDefault: `false`"
-    , propTyp:
-      { required: false
-      , typ: TypOneOf [ TypNode
-                      , TypFn { effectful: false
-                              , input: [ requiredPropTyp TypBoolean
-                                       ]
-                              , output: requiredPropTyp TypNode
-                              }
-                      ]
-      }
-    }
+  , optionalProp
+    "filterIcon"
+    (TypOneOf [ TypNode
+              , TypFn { effectful: false
+                      , input: [ TypBoolean
+                               ]
+                      , output: TypNode
+                      }
+              ])
+    (Just $ "Customized filter icon"
+     <> "\nType: ReactNode|(filtered: boolean) => ReactNode"
+     <> "\nDefault: `false`")
 
-  , { name: "filterMultiple"
-    , doc: Just $ "Whether multiple filters can be selected"
-      <> "\nType: boolean"
-      <> "\nDefault: `true`"
-    , propTyp:
-      { required: false
-      , typ: TypBoolean
-      }
-    }
+  , optionalProp
+    "filterMultiple"
+    (TypBoolean)
+    (Just $ "Whether multiple filters can be selected"
+     <> "\nType: boolean"
+     <> "\nDefault: `true`")
 
-  , { name: "filters"
-    , doc: Just $ "Filter menu config"
-      <> "\nType: object[]"
-      <> "\nDefault: -"
-    , propTyp:
-      { required: false
-      , typ: TypArray TypUnknown
-      }
-    }
+  , optionalProp
+    "filters"
+    (TypArray TypUnknown)
+    (Just $ "Filter menu config"
+     <> "\nType: object[]"
+     <> "\nDefault: -")
 
-  , { name: "fixed"
-    , doc: Just $ "(\"IE not support) Set column to be fixed: `true`(same as left) `'left'` `'right'`"
-      <> "\nType: boolean|string"
-      <> "\nDefault: `false`"
-    , propTyp:
-      { required: false
-      , typ: TypOneOf [ TypBoolean
+  , optionalProp
+    "fixed"
+    (TypOneOf [ TypBoolean
                     , TypString
                     ]
-      }
-    }
+      )
+    (Just $ "(\"IE not support) Set column to be fixed: `true`(same as left) `'left'` `'right'`"
+      <> "\nType: boolean|string")
 
-  , { name: "key"
-    , doc: Just $ "Unique key of this column, you can ignore this prop if you've set a unique `dataIndex`"
+  , optionalProp
+    "key"
+    TypString
+    (Just $ "Unique key of this column, you can ignore this prop if you've set a unique `dataIndex`"
       <> "\nType: string"
       <> "\nDefault: -"
-    , propTyp:
-      { required: false
-      , typ: TypString
-      }
-    }
+    )
 
-  , { name: "render"
-    , doc: Just $"Renderer of the table cell. The return value should be a ReactNode, or an object for [colSpan/rowSpan config](#components-table-demo-colspan-rowspan)"
-      <> "\nType: Function(text, record, index) {}"
-      <> "\nDefault: -"
-    , propTyp:
-      { required: false
-      , typ: TypFn { effectful: false
-                 , input: [ requiredPropTyp TypString
-                          , requiredPropTyp TypUnknown
-                          , requiredPropTyp TypInt
-                          , requiredPropTyp TypNode
-                          ]
-                 , output: requiredPropTyp TypUnit
-                 }
-      }
-    }
-
-  , { name: "sorter"
-    , doc: Just $ "Sort function for local sort, see [Array.sort](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/sort)'s compareFunction. If you need sort buttons only, set to `true`"
-      <> "\nType: Function|boolean"
-      <> "\nDefault: -"
-    , propTyp:
-      { required: false
-      , typ: TypOneOf [ TypBoolean
-                    , TypFn { effectful: false
-                            , input: []
-                            , output: requiredPropTyp TypUnknown
-                            }
+  , optionalProp
+    "render"
+    (TypFn { effectful: false
+           , input: [ TypString
+                    , TypUnknown
+                    , TypInt
+                    , TypNode
                     ]
+           , output: TypUnit
+           })
+    (Just $"Renderer of the table cell. The return value should be a ReactNode, or an object for [colSpan/rowSpan config](#components-table-demo-colspan-rowspan)")
 
-      }
-    }
 
-  , { name: "sortOrder"
-    , doc: Just $ "Order of sorted values: `'ascend'` `'descend'` `false`"
+  , optionalProp
+    "sorter"
+    (TypOneOf [ TypBoolean
+              , TypFn { effectful: false
+                      , input: []
+                      , output: TypUnknown
+                      }
+              ]
+
+    )
+    (Just $ "Sort function for local sort, see [Array.sort](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/sort)'s compareFunction. If you need sort buttons only, set to `true`")
+
+
+  , optionalProp
+    "sortOrder"
+    (TypOneOf [ TypBooleanLit false
+              , TypStringLit "ascend"
+              , TypStringLit "descend"
+              ]
+    )
+    (Just $ "Order of sorted values: `'ascend'` `'descend'` `false`"
       <> "\nType: boolean|string"
-      <> "\nDefault: -"
-    , propTyp:
-      { required: false
-      , typ: TypOneOf [ TypBooleanLit false
-                    , TypStringLit "ascend"
-                    , TypStringLit "descend"
-                    ]
-      }
-    }
+      <> "\nDefault: -")
 
-  , { name: "sortDirections"
-    , doc: Just $ "supported sort way, override `sortDirections` in `Table`, could be `'ascend'`, `'descend'`"
-      <> "\nType: Array"
-      <> "\nDefault: `['ascend', 'descend']`"
-    , propTyp:
-      { required: false
-      , typ: TypArray ( TypOneOf [ TypStringLit "ascend"
-                               , TypStringLit "descend"
-                               ]
-                    )
-      }
-    }
 
-  , { name: "title"
-    , doc: Just $ "Title of this column"
+  , optionalProp
+    "sortDirections"
+    (TypArray ( TypOneOf [ TypStringLit "ascend"
+                         , TypStringLit "descend"
+                         ]
+              )
+    )
+    (Just $ "supported sort way, override `sortDirections` in `Table`, could be `'ascend'`, `'descend'`"
+      <> "\nType: Array")
+
+
+  , optionalProp
+    "title"
+    (TypOneOf [ TypNode
+              , TypFn { effectful: false
+                      , input:
+                        [ TypRecord [ optionalProp_ "sortOrder"  TypInt
+                                    , optionalProp_ "sortColumn" TypUnknown
+                                    , optionalProp_ "filters" TypUnknown
+                                    ]
+                        ]
+                      , output: TypNode
+                      }
+              ])
+    (Just $ "Title of this column"
       <> "\nType: ReactNode|({ sortOrder, sortColumn, filters }) => ReactNode"
-      <> "\nDefault: -"
-    , propTyp:
-      { required: false
-      , typ: TypOneOf [ TypNode
-                    , TypFn { effectful: false
-                            , input: [ requiredPropTyp $
-                                       TypRecord [ prop_ "sortOrder" $ optionalPropTyp TypInt
-                                                 , prop_ "sortColumn" $ optionalPropTyp TypUnknown
-                                                 , prop_ "filters" $ optionalPropTyp TypUnknown
-                                                 ]
-                                     ]
-                            , output: requiredPropTyp TypNode
-                            }
+      <> "\nDefault: -")
+
+
+  , optionalProp
+    "width"
+    (TypOneOf [ TypString, TypNumber ])
+    (Just $ "Width of this column ([width not working?](https://github.com/ant-design/ant-design/issues/13825#issuecomment-449889241))"
+      <> "\nType: string|number")
+
+  , optionalProp
+    "onCell"
+    (TypFn { effectful: true
+           , input: [ TypUnknown
+                    , TypInt
                     ]
-      }
-    }
-
-  , { name: "width"
-    , doc: Just $ "Width of this column ([width not working?](https://github.com/ant-design/ant-design/issues/13825#issuecomment-449889241))"
-      <> "\nType: string|number"
-      <> "\nDefault: -"
-    , propTyp:
-      { required: false
-      , typ: TypOneOf [ TypString, TypNumber ]
-      }
-    }
-
-  , { name: "onCell"
-    , doc: Just $ "Set props on per cell"
+           , output: TypUnit
+           })
+    (Just $ "Set props on per cell"
       <> "\nType: Function(record, rowIndex)"
-      <> "\nDefault: -"
-    , propTyp:
-      { required: false
-      , typ: TypFn { effectful: true
-                   , input: [ requiredPropTyp TypUnknown
-                            , requiredPropTyp TypInt
-                            ]
-                   , output: requiredPropTyp TypUnit
-                   }
-      }
-    }
+      <> "\nDefault: -")
 
-  , { name: "onFilter"
-    , doc: Just $ "Callback executed when the confirm filter button is clicked"
+
+  , optionalProp
+    "onFilter"
+    (TypFn { effectful: true
+           , input: []
+           , output: TypUnit
+           }
+    )
+    (Just $ "Callback executed when the confirm filter button is clicked"
       <> "\nType: Function"
-      <> "\nDefault: -"
-    , propTyp:
-      { required: false
-      , typ: TypFn { effectful: true
-                   , input: []
-                   , output: requiredPropTyp TypUnit
-                   }
-      }
-    }
+      <> "\nDefault: -")
 
-  , { name: "onFilterDropdownVisibleChange"
-    , doc: Just $ "Callback executed when `filterDropdownVisible` is changed"
+
+  , optionalProp
+    "onFilterDropdownVisibleChange"
+    (TypFn { effectful: true
+           , input: [ TypBoolean
+                    ]
+           , output: TypUnit
+           }
+    )
+    (Just $ "Callback executed when `filterDropdownVisible` is changed"
       <> "\nType: function(visible) {}"
-      <> "\nDefault: -"
-    , propTyp:
-      { required: false
-      , typ: TypFn { effectful: true
-                 , input: [ requiredPropTyp TypBoolean
-                          ]
-                 , output: requiredPropTyp TypUnit
-                 }
-      }
-    }
+      <> "\nDefault: -")
 
-  , { name: "onHeaderCell"
-    , doc: Just $"Set props on per header cell"
+
+  , optionalProp
+    "onHeaderCell"
+    (TypFn { effectful: true
+           , input: [ TypUnknown
+                    ]
+           , output: TypUnit
+           })
+    (Just $"Set props on per header cell"
       <> "\nType: Function(column)"
-      <> "\nDefault: -"
-    , propTyp:
-      { required: false
-      , typ: TypFn { effectful: true
-                 , input: [ requiredPropTyp TypUnknown
-                          ]
-                 , output: requiredPropTyp TypUnit
-                 }
-      }
-    }
+      <> "\nDefault: -")
+
   ]

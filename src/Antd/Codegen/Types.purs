@@ -4,9 +4,8 @@ module Antd.Codegen.Types
        , Prop
        , prop
        , prop_
-       , PropTyp
-       , requiredPropTyp
-       , optionalPropTyp
+       , optionalProp
+       , optionalProp_
        , Typ(..)
          -- purescript syntax
        , PSModule
@@ -50,28 +49,22 @@ type Component =
 
 type Prop
   = { name :: String
-    , propTyp :: PropTyp
+    , typ :: Typ
     , doc :: Maybe String
     }
 
-prop :: String -> PropTyp -> Maybe String -> Prop
-prop name propTyp doc = { name, propTyp, doc }
+prop :: String -> Typ -> Maybe String -> Prop
+prop name typ doc = { name, typ, doc }
 
-prop_ :: String -> PropTyp -> Prop
-prop_ name propTyp = prop name propTyp Nothing
+prop_ :: String -> Typ -> Prop
+prop_ name typ = prop name typ Nothing
 
-type PropTyp =
-  { typ :: Typ
-  , required :: Boolean
-  }
+optionalProp :: String -> Typ -> Maybe String -> Prop
+optionalProp name typ doc = { name, typ: TypUndefinedOr typ, doc }
 
-requiredPropTyp :: Typ -> PropTyp
-requiredPropTyp typ =
-  { typ, required: true }
+optionalProp_ :: String -> Typ -> Prop
+optionalProp_ name typ = optionalProp name typ Nothing
 
-optionalPropTyp :: Typ -> PropTyp
-optionalPropTyp typ =
-  { typ, required: false }
 
 data Typ
   = TypString
@@ -85,11 +78,12 @@ data Typ
   | TypNode
   | TypUnit
 
+  | TypUndefinedOr Typ
   | TypOneOf (Array Typ)
   | TypArray Typ
   | TypFn { effectful :: Boolean
-          , input :: Array PropTyp
-          , output :: PropTyp
+          , input :: Array Typ
+          , output :: Typ
           }
   | TypRecord (Array Prop)
 

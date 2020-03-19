@@ -8,7 +8,7 @@ module Antd.Codegen.ModuleBundler
 import Prelude
 
 import Antd.Codegen.PropsBuilder (PropsBuilder, buildProps)
-import Antd.Codegen.Types (AntModule, JSExport, ModuleBundle, PSDecl(..), PSDeclName(..), PSRecordRow, PSTypeDecl, Prop, PropTyp, Typ(..), psTypeArgSymbol, psTypeDecl, psTypeDecl', psTypeDeclOp, psTypeDeclRecord, psTypeDecl_)
+import Antd.Codegen.Types (AntModule, JSExport, ModuleBundle, PSDecl(..), PSDeclName(..), PSRecordRow, PSTypeDecl, Prop, Typ(..), psTypeArgSymbol, psTypeDecl, psTypeDecl', psTypeDeclOp, psTypeDeclRecord, psTypeDecl_)
 import Control.Monad.State (class MonadState, State, execState, modify_)
 import Data.Array as Array
 import Data.Foldable (traverse_)
@@ -131,7 +131,7 @@ addComponent name jsRequire jsPath props = do
 
   where
     importPropTyps =
-      traverse_ (usePropTypeDecl <<< _.propTyp) props
+      traverse_ (useTypeDecl <<< _.typ) props
 
     pcn = mkCompNames name
 
@@ -157,7 +157,7 @@ addImportClass mod name =
 
 useRecordRow :: Prop -> ModuleBuilder PSRecordRow
 useRecordRow p =
-  usePropTypeDecl p.propTyp <#> \typeDecl ->
+  useTypeDecl p.typ <#> \typeDecl ->
   { name: p.name
   , typeDecl
   , doc: p.doc
@@ -197,13 +197,6 @@ addExportFun :: String -> ModuleBuilder Unit
 addExportFun name =
   addExport $ PSDeclNameFun name
 
-usePropTypeDecl :: PropTyp -> ModuleBuilder PSTypeDecl
-usePropTypeDecl { required, typ } = do
-  d <- useTypeDecl typ
-  if not required
-    then addImportType "Untagged.Union" "UndefinedOr" false $> psTypeDecl "UndefinedOr" [d]
-    else pure d
-
 useTypeDecl :: Typ -> ModuleBuilder PSTypeDecl
 useTypeDecl TypString = addImportPrelude $> psTypeDecl_ "String"
 useTypeDecl TypInt = addImportPrelude $> psTypeDecl_ "Int"
@@ -220,13 +213,17 @@ useTypeDecl (TypBooleanLit b) =
 useTypeDecl TypNode =
   addImportType "React.Basic" "JSX" false
   $> psTypeDecl_ "JSX"
+useTypeDecl (TypUndefinedOr t) = do
+  addImportType "Untagged.Union" "UndefinedOr" false
+  d <- useTypeDecl t
+  pure $ psTypeDecl "UndefinedOr" [d]
 useTypeDecl (TypOneOf options) = do
   addImportType "Untagged.Union" "|+|" false
   psTypeDeclOp "|+|" <$> traverse useTypeDecl options
 useTypeDecl (TypFn { effectful, input, output }) = do
   fn <- importUncurried
-  outArg <- usePropTypeDecl output
-  inArgs <- traverse usePropTypeDecl input
+  outArg <- useTypeDecl output
+  inArgs <- traverse useTypeDecl input
   pure $ fn $ Array.snoc inArgs outArg
 
   where
@@ -245,8 +242,8 @@ useTypeDecl (TypFn { effectful, input, output }) = do
 useTypeDecl (TypRecord fields) =
   psTypeDeclRecord <$> traverse addRow fields
   where
-    addRow { name, propTyp } =
-      usePropTypeDecl propTyp <#> { name, typeDecl: _ }
+    addRow { name, typ } =
+      useTypeDecl typ <#> { name, typeDecl: _ }
 useTypeDecl (TypArray a) = do
   decl <- useTypeDecl a
   pure $ psTypeDecl "Array" [decl]
