@@ -74,7 +74,6 @@ optionalPropTyp :: Typ -> PropTyp
 optionalPropTyp typ =
   { typ, required: false }
 
-
 data Typ
   = TypString
   | TypInt
