@@ -7,7 +7,7 @@ import Prelude
 import Antd.Codegen.JSPrinter (printJSBinding)
 import Antd.Codegen.ModuleBundler (createModuleBundle)
 import Antd.Codegen.PSPrinter (printModule)
-import Antd.Codegen.Types (AntModule, ModuleBundle, PSModule, Prop, Typ(..), JSBinding, requiredPropTyp)
+import Antd.Codegen.Types (AntModule, JSBinding, ModuleBundle, PSModule, Prop, Typ(..), optionalPropTyp, prop_, requiredPropTyp)
 import Data.Foldable (for_, traverse_)
 import Data.Maybe (Maybe(..))
 import Effect.Aff (Aff)
@@ -165,28 +165,12 @@ tableModule =
         , propTyp:
         { required: false
         , typ: TypRecord
-          [ { key: "filterConfirm"
-            , propTyp:
-              { required: false
-              , typ: TypString
-              }
-            }
-          , { key: "filterReset"
-            , propTyp:
-              { required: false
-              , typ: TypString
-              }
-            }
-          , { key: "emptyText"
-            , propTyp:
-              { required: false
-              , typ: TypString
-              }
-            }
+          [ prop_ "filterConfirm" $ optionalPropTyp TypString
+          , prop_ "filterReset" $ optionalPropTyp TypString
+          , prop_ "emptyText" $ optionalPropTyp TypString
           ]
         }
         }
-
       , { name: "pagination"
         , doc: Just $ "Config of pagination. You can ref table pagination [config](#pagination) or full [`pagination`](/components/pagination/) document, hide it by setting it to `false`"
           <> "\nType: object"
@@ -610,24 +594,9 @@ columnPropsDef =
       , typ: TypOneOf [ TypNode
                     , TypFn { effectful: false
                             , input: [ requiredPropTyp $
-                                       TypRecord [ { key: "sortOrder"
-                                                   , propTyp:
-                                                     { required: false
-                                                     , typ: TypInt
-                                                     }
-                                                   }
-                                                 , { key: "sortColumn"
-                                                   , propTyp:
-                                                     { required: false
-                                                     , typ: TypUnknown
-                                                     }
-                                                   }
-                                                 , { key: "filters"
-                                                   , propTyp:
-                                                     { required: false
-                                                     , typ: TypUnknown
-                                                     }
-                                                   }
+                                       TypRecord [ prop_ "sortOrder" $ optionalPropTyp TypInt
+                                                 , prop_ "sortColumn" $ optionalPropTyp TypUnknown
+                                                 , prop_ "filters" $ optionalPropTyp TypUnknown
                                                  ]
                                      ]
                             , output: requiredPropTyp TypNode

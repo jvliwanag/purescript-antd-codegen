@@ -93,10 +93,7 @@ data Typ
           , input :: Array PropTyp
           , output :: PropTyp
           }
-  | TypRecord (Array ( { key :: String
-                       , propTyp :: PropTyp
-                       }
-                     ) )
+  | TypRecord (Array Prop)
 
 derive instance typEq :: Eq Typ
 derive instance typGeneric :: Generic Typ _

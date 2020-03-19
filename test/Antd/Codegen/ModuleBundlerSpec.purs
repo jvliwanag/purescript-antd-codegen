@@ -164,9 +164,8 @@ moduleBundlerSpec =
 
     it "should import types required for record fields" do
       let mod = moduleWithRequiredTyp
-                (TypRecord [{ key: "k"
-                            , propTyp: requiredPropTyp TypInt
-                            }])
+                (TypRecord [prop_ "k" $ requiredPropTyp TypInt
+                           ])
       mod.importPrelude `shouldEqual` true
 
     it "should import types required for array values and have an array prop" do

@@ -124,8 +124,8 @@ useTypeDecl (TypFn { effectful, input, output }) = do
 useTypeDecl (TypRecord fields) =
   psTypeDeclRecord <$> traverse addRow fields
   where
-    addRow { key, propTyp } =
-      usePropTypeDecl propTyp <#> { name: key, typeDecl: _ }
+    addRow { name, propTyp } =
+      usePropTypeDecl propTyp <#> { name, typeDecl: _ }
 useTypeDecl (TypArray a) = do
   decl <- useTypeDecl a
   pure $ psTypeDecl "Array" [decl]
