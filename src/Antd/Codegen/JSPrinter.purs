@@ -1,32 +1,18 @@
 module Antd.Codegen.JSPrinter
-       ( printJSBinding
+       ( printJSExports
        ) where
 
 import Prelude
 
-import Antd.Codegen.Types (JSBinding, JSExport)
+import Antd.Codegen.Types (JSExport)
 import Data.Array as Array
-import Data.Maybe (Maybe(..))
 
-printJSBinding :: JSBinding -> String
-printJSBinding { antSubmodule, exports } =
-  printSubmoduleSection antSubmodule
-  <> "\n"
-  <> "\n" <> printExportsSection antSubmodule exports
-  <> "\n"
+printJSExports :: Array JSExport -> String
+printJSExports exports =
+  Array.foldMap ((_ <> "\n") <<< printExportSection) exports
 
-printSubmoduleSection :: String -> String
-printSubmoduleSection antSubmodule =
-  "const " <> antSubmodule <> " = require('antd')." <> antSubmodule <> ";"
-
-printExportsSection :: String -> Array JSExport -> String
-printExportsSection antSubmodule exports =
-  Array.intercalate "\n" $ printExportSection antSubmodule <$> exports
-
-printExportSection :: String -> JSExport -> String
-printExportSection antSubmodule { name, member } =
-  "exports." <> name <> " = " <> antSubmodule <> memberSection <> ";"
+printExportSection :: JSExport -> String
+printExportSection { name, jsRequire, jsPath } =
+  "exports." <> name <> " = require('" <> jsRequire <> "')" <> pathSection <> ";"
   where
-    memberSection = case member of
-      Just m -> "." <> m
-      Nothing -> ""
+    pathSection = Array.foldMap ("." <> _) jsPath

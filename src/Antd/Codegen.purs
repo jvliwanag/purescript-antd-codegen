@@ -4,10 +4,10 @@ module Antd.Codegen
 
 import Prelude
 
-import Antd.Codegen.JSPrinter (printJSBinding)
+import Antd.Codegen.JSPrinter (printJSExports)
 import Antd.Codegen.ModuleBundler (createModuleBundle)
 import Antd.Codegen.PSPrinter (printModule)
-import Antd.Codegen.Types (AntModule, JSBinding, ModuleBundle, PSModule, Prop, Typ(..), optionalPropTyp, prop_, requiredPropTyp)
+import Antd.Codegen.Types (AntModule, ModuleBundle, PSModule, Prop, Typ(..), JSExport, optionalPropTyp, prop_, requiredPropTyp)
 import Data.Foldable (for_, traverse_)
 import Data.Maybe (Maybe(..))
 import Effect.Aff (Aff)
@@ -49,8 +49,8 @@ prepSrcDir = do
       )
 
 saveModuleBundle :: ModuleBundle -> Aff Unit
-saveModuleBundle { name, psModule, jsBinding } =
-  savePSModule name psModule *> saveJSBinding name jsBinding
+saveModuleBundle { name, psModule, jsExports } =
+  savePSModule name psModule *> saveJSExports name jsExports
 
 savePSModule :: String -> PSModule -> Aff Unit
 savePSModule name m = do
@@ -60,13 +60,13 @@ savePSModule name m = do
     path = Path.concat [ generatedSrcDir, name <> ".purs" ]
     code = printModule m
 
-saveJSBinding :: String -> JSBinding -> Aff Unit
-saveJSBinding name j = do
+saveJSExports :: String -> Array JSExport -> Aff Unit
+saveJSExports name j = do
   log $ "writing " <> path
   writeTextFile UTF8 path code
   where
-    path = Path.concat [ generatedSrcDir, j.antSubmodule <> ".js" ]
-    code = printJSBinding j
+    path = Path.concat [ generatedSrcDir, name <> ".js" ]
+    code = printJSExports j
 
 
 tableModule :: AntModule

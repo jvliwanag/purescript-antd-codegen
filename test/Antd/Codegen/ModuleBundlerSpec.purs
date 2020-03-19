@@ -5,7 +5,7 @@ module Antd.Codegen.ModuleBundlerSpec
 import Prelude
 
 import Antd.Codegen.ModuleBundler (createModuleBundle)
-import Antd.Codegen.Types (ModuleBundle, PSDecl(..), PSDeclName(..), PSModule, PSTypeDecl, Prop, PropTyp, Typ(..), optionalPropTyp, prop_, psTypeArgSymbol, psTypeDecl, psTypeDecl', psTypeDeclOp, psTypeDecl_, requiredPropTyp)
+import Antd.Codegen.Types (ModuleBundle, PSDecl(..), PSDeclName(..), PSModule, PSTypeDecl, Prop, PropTyp, Typ(..), jsExport, optionalPropTyp, prop_, psTypeArgSymbol, psTypeDecl, psTypeDecl', psTypeDeclOp, psTypeDecl_, requiredPropTyp)
 import Data.Array as Array
 import Data.Foldable (traverse_)
 import Data.Maybe (Maybe(..), isJust, isNothing)
@@ -200,13 +200,10 @@ moduleBundlerSpec =
               }
             ]
           }
-      ).jsBinding `shouldEqual`
-        { antSubmodule: "Foo"
-        , exports:
-          [ { name: "_foo", member: Nothing }
-          , { name: "_bar", member: Just "Bar" }
-          ]
-        }
+      ).jsExports `shouldEqual`
+        [ jsExport "_foo" "antd" ["Foo"]
+        , jsExport "_bar" "antd" ["Foo", "Bar"]
+        ]
 
 emptyModule :: PSModule
 emptyModule = emptyModuleBundle.psModule

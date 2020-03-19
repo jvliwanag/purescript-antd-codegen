@@ -1,4 +1,2 @@
-const Table = require('antd').Table;
-
-exports._table = Table;
-exports._column = Table.Column;
+exports._table = require('antd').Table;
+exports._column = require('antd').Table.Column;

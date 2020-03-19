@@ -25,7 +25,6 @@ module Antd.Codegen.Types
        , psTypeArg
        , psTypeArgSymbol
          -- js syntax
-       , JSBinding
        , JSExport
        , jsExport
          -- bundle
@@ -195,23 +194,19 @@ psTypeArgSymbol = PSTypeArgSymbol
 
 --
 
-type JSBinding
-  = { antSubmodule :: String
-    , exports :: Array JSExport
-    }
-
 type JSExport
   = { name :: String
-    , member :: Maybe String
+    , jsRequire :: String
+    , jsPath :: Array String
     }
 
-jsExport :: String -> Maybe String -> JSExport
-jsExport name member = { name, member }
+jsExport :: String -> String -> Array String -> JSExport
+jsExport name jsRequire jsPath = { name, jsRequire, jsPath }
 
 --
 
 type ModuleBundle
   = { name :: String
     , psModule :: PSModule
-    , jsBinding :: JSBinding
+    , jsExports :: Array JSExport
     }

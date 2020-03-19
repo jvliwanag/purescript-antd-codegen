@@ -29,7 +29,11 @@ createModuleBundle am =
   *> traverse_ (addAntComponent false) am.subComponents
   where
     addAntComponent isPrimary { name, props } =
-      addComponent isPrimary name props
+      addComponent name "antd" jsMember props
+      where
+        jsMember = if isPrimary
+                   then [name]
+                   else [am.primaryComponent.name, name]
 
 newtype ModuleBuilder a = MB (State BuilderState a)
 derive instance moduleBuilderNewtype :: Newtype (ModuleBuilder a) _
@@ -45,7 +49,8 @@ derive newtype instance moduleBuilderMonadState :: MonadState
                          , imports :: Map String (Set PSDeclName)
                          , declarations :: Array PSDecl
                          , jsExports :: Array { name :: String
-                                              , member :: Maybe String
+                                              , jsRequire :: String
+                                              , jsPath :: Array String
                                               }
                          }) ModuleBuilder
 
@@ -67,10 +72,7 @@ buildModule name builder =
     , imports
     , declarations: finalState.declarations
     }
-  , jsBinding:
-    { antSubmodule: name
-    , exports: finalState.jsExports
-    }
+  , jsExports: finalState.jsExports
   }
 
 
@@ -101,12 +103,12 @@ buildModule_ name = buildModule name (pure unit)
 
 addAntdReactComponent :: String -> PropsBuilder Unit -> ModuleBuilder Unit
 addAntdReactComponent name propsB =
-  addComponent true name (buildProps propsB)
+  addComponent name "antd" [name] (buildProps propsB)
 
 -- React
 
-addComponent :: Boolean -> String -> Array Prop -> ModuleBuilder Unit
-addComponent isPrimary name props = do
+addComponent :: String -> String -> Array String -> Array Prop -> ModuleBuilder Unit
+addComponent name jsRequire jsPath props = do
   addComponentImports
   importPropTyps
   addExport ( PSDeclNameType { name: pcn.propsName
@@ -122,18 +124,16 @@ addComponent isPrimary name props = do
       }
     , PSDeclForeignRC pcn
     ]
-  addJSExport { name: pcn.foreignComponentName, member: jsMember }
+  addJSExport { name: pcn.foreignComponentName
+              , jsRequire
+              , jsPath
+              }
 
   where
     importPropTyps =
       traverse_ (usePropTypeDecl <<< _.propTyp) props
 
     pcn = mkCompNames name
-
-    jsMember =
-      if isPrimary
-      then Nothing
-      else Just name
 
     addComponentImports = do
       addImportType  "React.Basic" "ReactComponent" false
